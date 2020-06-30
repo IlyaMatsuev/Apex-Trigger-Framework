@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>Bot_Site_Url</fullName>
+        <categories>Bot Host Url</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Bot Site Url</shortDescription>
+        <value>https://victor-bot-dev-ed.lightning.force.com</value>
+    </labels>
+    <labels>
+        <fullName>Connect_Project_Command</fullName>
+        <categories>Command</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Connect Project Command</shortDescription>
+        <value>/connectproject</value>
+    </labels>
+    <labels>
+        <fullName>GitLab_API</fullName>
+        <categories>API</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>GitLab API</shortDescription>
+        <value>http://repository.vrpconsulting.com/api/v4</value>
+    </labels>
+    <labels>
+        <fullName>GitLab_Webhook_Route</fullName>
+        <categories>Rest Service</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>GitLab Webhook Route</shortDescription>
+        <value>/victor-gitlab-service</value>
+    </labels>
+    <labels>
+        <fullName>Set_Token_Command</fullName>
+        <categories>Command</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Set Token Command</shortDescription>
+        <value>/settoken</value>
+    </labels>
+    <labels>
+        <fullName>Set_Token_Info</fullName>
+        <categories>Command</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Set Token Info</shortDescription>
+        <value>/settokeninfo</value>
+    </labels>
+    <labels>
+        <fullName>Show_Commands</fullName>
+        <categories>Command</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Show Commands</shortDescription>
+        <value>/showcommands</value>
+    </labels>
+    <labels>
+        <fullName>Start_Command</fullName>
+        <categories>Command</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Start Command</shortDescription>
+        <value>/start</value>
+    </labels>
+    <labels>
+        <fullName>Telegram_API</fullName>
+        <categories>API</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Telegram API</shortDescription>
+        <value>https://api.telegram.org/bot</value>
+    </labels>
+    <labels>
+        <fullName>Telegram_Webhook_Route</fullName>
+        <categories>Rest Service</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Telegram Webhook Route</shortDescription>
+        <value>/victor-telegram-service/</value>
+    </labels>
+
+    <labels>
+        <fullName>InstanceCannotBeNull</fullName>
+        <categories>TriggerHelperLibrary</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>InstanceCannotBeNull</shortDescription>
+        <value>Trigger %%% instance cannot be null</value>
+    </labels>
+    <labels>
+        <fullName>InstanceNotOfRequiredInterface</fullName>
+        <categories>TriggerHelperLibrary</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>InstanceNotOfRequiredInterface</shortDescription>
+        <value>The %%% instance must implement the ### interface</value>
+    </labels>
+    <labels>
+        <fullName>InstanceNotOfRequiredType</fullName>
+        <categories>TriggerHelperLibrary</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>InstanceNotOfRequiredType</shortDescription>
+        <value>The %%% instance must be of the type ###</value>
+    </labels>
+    <labels>
+        <fullName>BindingOnlyForAsyncHandlers</fullName>
+        <categories>TriggerHelperLibrary</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>BindingOnlyForAsyncHandlers</shortDescription>
+        <value>The %%% option suitable only for async bindings</value>
+    </labels>
+    <labels>
+        <fullName>BindingOnlyForSyncHandlers</fullName>
+        <categories>TriggerHelperLibrary</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>BindingOnlyForAsyncHandlers</shortDescription>
+        <value>The %%% option suitable only for sync bindings</value>
+    </labels>
+</CustomLabels>
