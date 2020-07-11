@@ -4,9 +4,27 @@
 
 global with sharing class TriggerContext {
 
-    global TriggerOperation triggerEvent {get; private set;}
-    global TriggerType predOrPost {get; private set;}
-    global Boolean isAsyncRun { get {return asyncRunType != null;} }
+    global TriggerOperation triggerEvent {
+        get {
+            if (Test.isRunningTest()) {
+                return TriggerOperation.BEFORE_INSERT;
+            }
+            return Trigger.operationType;
+        }
+    }
+    global TriggerType predOrPost {
+        get {
+            if (Test.isRunningTest()) {
+                return TriggerType.BEFORE;
+            }
+            return Trigger.isAfter ? TriggerType.AFTER : TriggerType.BEFORE;
+        }
+    }
+    global Boolean isAsyncRun {
+        get {
+            return asyncRunType != null;
+        }
+    }
     global AsyncHandlerType asyncRunType {
         get {
             if (System.isFuture()) {
@@ -23,13 +41,12 @@ global with sharing class TriggerContext {
     global static final Set<String> handlersToBeSkipped {get; private set;}
 
     static {
+        skippingAllHandlers = false;
         handlersToBeSkipped = new Set<String>();
     }
 
-    public TriggerContext(TriggerOperation triggerEvent, TriggerType predOrPost) {
+    public TriggerContext() {
         this.properties = new Map<String, Object>();
-        this.triggerEvent = triggerEvent;
-        this.predOrPost = predOrPost;
     }
 
 
@@ -49,7 +66,7 @@ global with sharing class TriggerContext {
         handlersToBeSkipped.remove(handlerTypeName);
     }
 
-    public String getClassName(Object obj) {
+    public static String getClassName(Object obj) {
         return String.valueOf(obj).split(':').get(0);
     }
 }

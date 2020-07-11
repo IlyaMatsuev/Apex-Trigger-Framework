@@ -13,12 +13,12 @@ global with sharing class TriggerDispatcher {
         }
         private set;
     }
-    global ITriggerService defaultService {get; private set;}
-    global ITriggerErrorHandler defaultErrorHandler {get; private set;}
+    global ITriggerService defaultService { get; private set; }
+    global ITriggerErrorHandler defaultErrorHandler { get; private set; }
 
-    private TriggerContext triggerContext {get;set;}
-    private final List<TriggerHandlerWrapper> handlersMap {get;set;}
-    private final List<TriggerHandlerWrapper> asyncHandlersMap {get;set;}
+    private TriggerContext context { get; set; }
+    private final List<TriggerHandlerWrapper> handlersMap { get; set; }
+    private final List<TriggerHandlerWrapper> asyncHandlersMap { get; set; }
 
     private TriggerDispatcher() {
         this.handlersMap = new List<TriggerHandlerWrapper>();
@@ -27,11 +27,16 @@ global with sharing class TriggerDispatcher {
 
 
     global void run() {
-        if (triggerContext == null) {
-            triggerContext = TriggerContextBuilder.getContext();
+        if (!Trigger.isExecuting && !Test.isRunningTest()) {
+            throw new TriggerDispatcherException(Label.NotATriggerContext);
         }
-        TriggerRunner.runSyncHandlers(triggerContext, handlersMap);
-        TriggerRunner.runAsyncHandlers(triggerContext, asyncHandlersMap);
+        if (context == null) {
+            context = TriggerContextBuilder.getContext();
+        }
+        TriggerRunner.runSyncHandlers(context, handlersMap.clone());
+        TriggerRunner.runAsyncHandlers(context, asyncHandlersMap.clone());
+        handlersMap.clear();
+        asyncHandlersMap.clear();
     }
 
     global TriggerDispatcher bind(TriggerOperation event, ITriggerHandler handler) {

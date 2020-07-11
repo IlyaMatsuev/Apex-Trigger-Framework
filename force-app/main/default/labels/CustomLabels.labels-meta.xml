@@ -121,4 +121,28 @@
         <shortDescription>BindingOnlyForAsyncHandlers</shortDescription>
         <value>The %%% option suitable only for sync bindings</value>
     </labels>
+    <labels>
+        <fullName>NotATriggerContext</fullName>
+        <categories>TriggerHelperLibrary</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>NotATriggerContext</shortDescription>
+        <value>Trigger functionality must be used inside trigger context</value>
+    </labels>
+    <labels>
+        <fullName>NoDelayForSchedulableRun</fullName>
+        <categories>TriggerHelperLibrary</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>NoDelayForSchedulableRun</shortDescription>
+        <value>Delay option must be indicated for a schedulable handler run</value>
+    </labels>
+    <labels>
+        <fullName>NotAllowedDelayForFutureRun</fullName>
+        <categories>TriggerHelperLibrary</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>NotAllowedDelayForFutureRun</shortDescription>
+        <value>Delay option available only for a schedulable handler run</value>
+    </labels>
 </CustomLabels>

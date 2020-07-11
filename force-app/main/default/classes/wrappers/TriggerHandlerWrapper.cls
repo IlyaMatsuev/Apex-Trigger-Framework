@@ -6,7 +6,15 @@ public with sharing class TriggerHandlerWrapper {
 
     public TriggerOperation triggerEvent {get; private set;}
     public AsyncHandlerType asyncHandlerType {get; private set;}
-    public Boolean alreadyExecuted {get;set;}
+    public Boolean alreadyExecuted {
+        get {
+            if (alreadyExecuted == null) {
+                alreadyExecuted = false;
+            }
+            return alreadyExecuted;
+        }
+        set;
+    }
 
     public Map<TriggerBindOption, Object> options {get; private set;}
 

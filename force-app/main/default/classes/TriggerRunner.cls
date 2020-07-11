@@ -28,7 +28,7 @@ public with sharing class TriggerRunner {
                     checkSyncAndAsyncOptionsInPlace(handlerWrapper.options.keySet(), true);
                     ITriggerHandler handler = handlerWrapper.handler;
                     ITriggerService service = handlerWrapper.service == null ? dispatcher.defaultService : handlerWrapper.service;
-                    if (!TriggerContext.handlersToBeSkipped.contains(context.getClassName(handler))) {
+                    if (!TriggerContext.handlersToBeSkipped.contains(TriggerContext.getClassName(handler))) {
                         handler.handle(context, service);
                     }
                 } catch(TriggerDispatcherException error) {
@@ -62,7 +62,7 @@ public with sharing class TriggerRunner {
                 handlerWrapper.options.put(TriggerBindOption.ERROR_HANDLER, errorHandler);
 
                 IAsyncHandlerContainer container = asyncHandlerContainersMap.get(handlerWrapper.asyncHandlerType);
-                if (container != null && !TriggerContext.handlersToBeSkipped.contains(context.getClassName(handler))) {
+                if (container != null && !TriggerContext.handlersToBeSkipped.contains(TriggerContext.getClassName(handler))) {
                     container.execute(context.clone(), handler, handlerWrapper.options);
                 }
                 handlerWrapper.alreadyExecuted = true;

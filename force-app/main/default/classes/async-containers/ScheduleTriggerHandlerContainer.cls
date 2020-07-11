@@ -23,12 +23,12 @@ public with sharing class ScheduleTriggerHandlerContainer implements Database.Ba
         Integer delayMinutes = (Integer) options.get(TriggerBindOption.DELAY);
         String jobPrefix = (String) options.get(TriggerBindOption.JOB_PREFIX);
         if (delayMinutes == null) {
-            throw new TriggerDispatcherException('Delay option must be indicated for a schedulable handler run');
+            throw new TriggerDispatcherException(Label.NoDelayForSchedulableRun);
         }
         if (String.isBlank(jobPrefix)) {
             jobPrefix = DEFAULT_JOB_PREFIX;
         }
-        String completeJobName = jobPrefix + context.getClassName(handler) + System.now().getTime();
+        String completeJobName = jobPrefix + TriggerContext.getClassName(handler) + '-' + System.now().getTime();
         System.scheduleBatch(new ScheduleTriggerHandlerContainer(context, handler, options), completeJobName, delayMinutes);
     }
 
@@ -48,8 +48,8 @@ public with sharing class ScheduleTriggerHandlerContainer implements Database.Ba
         }
     }
 
-    public Database.QueryLocator start(Database.BatchableContext batchableContext) {
-        return null;
+    public List<SObject> start(Database.BatchableContext batchableContext) {
+        return [SELECT Id FROM Account LIMIT 0];
     }
 
     public void finish(Database.BatchableContext batchableContext) {}
