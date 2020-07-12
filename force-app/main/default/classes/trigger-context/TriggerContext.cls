@@ -4,6 +4,11 @@
 
 global with sharing class TriggerContext {
 
+    private List<SObject> clonedNewList {get;set;}
+    private List<SObject> clonedOldList {get;set;}
+    private Map<Id, SObject> clonedNewMap {get;set;}
+    private Map<Id, SObject> clonedOldMap {get;set;}
+
     global TriggerOperation triggerEvent {
         get {
             if (Test.isRunningTest()) {
@@ -35,6 +40,38 @@ global with sharing class TriggerContext {
             return null;
         }
     }
+    global List<SObject> newList {
+        get {
+            if (!Trigger.isExecuting) {
+                return clonedNewList;
+            }
+            return Trigger.new;
+        }
+    }
+    global List<SObject> oldList {
+        get {
+            if (!Trigger.isExecuting) {
+                return clonedOldList;
+            }
+            return Trigger.old;
+        }
+    }
+    global Map<Id, SObject> newMap {
+        get {
+            if (!Trigger.isExecuting) {
+                return clonedNewMap;
+            }
+            return Trigger.newMap;
+        }
+    }
+    global Map<Id, SObject> oldMap {
+        get {
+            if (!Trigger.isExecuting) {
+                return clonedOldMap;
+            }
+            return Trigger.oldMap;
+        }
+    }
     global final Map<String, Object> properties {get; private set;}
 
     global static Boolean skippingAllHandlers {get; private set;}
@@ -49,6 +86,13 @@ global with sharing class TriggerContext {
         this.properties = new Map<String, Object>();
     }
 
+
+    public void cloneTriggeredRecords() {
+        this.clonedNewList = Trigger.new;
+        this.clonedOldList = Trigger.old;
+        this.clonedNewMap = Trigger.newMap;
+        this.clonedOldMap = Trigger.oldMap;
+    }
 
     global static void skipAllHandlers() {
         skippingAllHandlers = true;

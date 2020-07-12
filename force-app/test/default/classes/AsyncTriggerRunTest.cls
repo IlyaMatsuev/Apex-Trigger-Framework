@@ -183,6 +183,11 @@ public with sharing class AsyncTriggerRunTest {
             TriggerType triggerType = context.predOrPost;
             AsyncHandlerType asyncHandlerType = context.asyncRunType;
             Boolean isAsync = context.isAsyncRun;
+            List<SObject> newList = context.newList;
+            List<SObject> oldList = context.oldList;
+            Map<Id, SObject> newMap = context.newMap;
+            Map<Id, SObject> oldMap = context.oldMap;
+
 
             context.properties.put('event', triggerEvent);
             context.properties.put('type', triggerType);

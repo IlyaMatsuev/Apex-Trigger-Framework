@@ -9,7 +9,7 @@ public with sharing class SyncTriggerRunTest {
     public static void positiveOnlyHandlerRun() {
         Test.startTest();
         TriggerDispatcher.dispatcher
-                .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler1())
+                .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler())
                 .run();
         Test.stopTest();
 
@@ -25,11 +25,11 @@ public with sharing class SyncTriggerRunTest {
     public static void positiveHandlerAndServiceRun() {
         Test.startTest();
         Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object> {
-                TriggerBindOption.SERVICE => new AccountTriggerTestService1()
+                TriggerBindOption.SERVICE => new AccountTriggerTestService()
         };
         TriggerDispatcher.dispatcher
-                .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler1(), options)
-                .setDefaultService(new AccountTriggerTestService1())
+                .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler(), options)
+                .setDefaultService(new AccountTriggerTestService())
                 .run();
         Test.stopTest();
 
@@ -45,13 +45,13 @@ public with sharing class SyncTriggerRunTest {
     public static void positiveHandlerServiceAndErrorHandlerRun() {
         Test.startTest();
         Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object> {
-                TriggerBindOption.SERVICE => new AccountTriggerTestService1(),
-                TriggerBindOption.ERROR_HANDLER => new AccountTriggerTestErrorHandler1()
+                TriggerBindOption.SERVICE => new AccountTriggerTestService(),
+                TriggerBindOption.ERROR_HANDLER => new AccountTriggerTestErrorHandler()
         };
         TriggerDispatcher.dispatcher
-                .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler1(true), options)
-                .setDefaultService(new AccountTriggerTestService1())
-                .setDefaultErrorHandler(new AccountTriggerTestErrorHandler1())
+                .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler(true), options)
+                .setDefaultService(new AccountTriggerTestService())
+                .setDefaultErrorHandler(new AccountTriggerTestErrorHandler())
                 .run();
         Test.stopTest();
 
@@ -64,13 +64,13 @@ public with sharing class SyncTriggerRunTest {
     }
 
 
-    private class AccountTriggerTestHandler1 implements ITriggerHandler {
+    private class AccountTriggerTestHandler implements ITriggerHandler {
 
         private Boolean throwException = false;
 
-        public AccountTriggerTestHandler1() {}
+        public AccountTriggerTestHandler() {}
 
-        public AccountTriggerTestHandler1(Boolean throwException) {
+        public AccountTriggerTestHandler(Boolean throwException) {
             this.throwException = throwException;
         }
 
@@ -80,6 +80,10 @@ public with sharing class SyncTriggerRunTest {
             TriggerType triggerType = context.predOrPost;
             AsyncHandlerType asyncHandlerType = context.asyncRunType;
             Boolean isAsync = context.isAsyncRun;
+            List<SObject> newList = context.newList;
+            List<SObject> oldList = context.oldList;
+            Map<Id, SObject> newMap = context.newMap;
+            Map<Id, SObject> oldMap = context.oldMap;
 
             context.properties.put('event', triggerEvent);
             context.properties.put('type', triggerType);
@@ -102,7 +106,7 @@ public with sharing class SyncTriggerRunTest {
         }
     }
 
-    private class AccountTriggerTestService1 implements ITriggerService {
+    private class AccountTriggerTestService implements ITriggerService {
 
         public void insertRelatedRecords() {}
 
@@ -111,7 +115,7 @@ public with sharing class SyncTriggerRunTest {
         public void deleteRelatedRecords() {}
     }
 
-    private class AccountTriggerTestErrorHandler1 implements ITriggerErrorHandler {
+    private class AccountTriggerTestErrorHandler implements ITriggerErrorHandler {
 
         public void handle(TriggerContext context, Exception error) {
             TriggerContext.skipAllHandlers();
