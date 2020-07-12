@@ -6,5 +6,6 @@ global enum TriggerBindOption {
     SERVICE,
     ERROR_HANDLER,
     DELAY,
-    JOB_PREFIX
+    JOB_PREFIX,
+    HANDLER_NAME
 }

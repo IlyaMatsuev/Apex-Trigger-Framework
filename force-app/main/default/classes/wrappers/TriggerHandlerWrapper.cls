@@ -33,7 +33,9 @@ public with sharing class TriggerHandlerWrapper {
     private final Map<TriggerBindOption, ITriggerOptionsValidator> triggerOptionsValidatorsMap = new Map<TriggerBindOption, ITriggerOptionsValidator> {
             TriggerBindOption.SERVICE => new TriggerServiceOptionValidator(),
             TriggerBindOption.ERROR_HANDLER => new TriggerErrorHandlerOptionValidator(),
-            TriggerBindOption.DELAY => new TriggerDelayOptionValidator()
+            TriggerBindOption.DELAY => new TriggerDelayOptionValidator(),
+            TriggerBindOption.JOB_PREFIX => new TriggerJobPrefixOptionValidator(),
+            TriggerBindOption.HANDLER_NAME => new TriggerHandlerNameOptionValidator()
     };
 
 

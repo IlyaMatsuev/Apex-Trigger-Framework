@@ -28,7 +28,11 @@ public with sharing class TriggerRunner {
                     checkSyncAndAsyncOptionsInPlace(handlerWrapper.options.keySet(), true);
                     ITriggerHandler handler = handlerWrapper.handler;
                     ITriggerService service = handlerWrapper.service == null ? dispatcher.defaultService : handlerWrapper.service;
-                    if (!TriggerContext.handlersToBeSkipped.contains(TriggerContext.getClassName(handler))) {
+                    String handlerName = (String) handlerWrapper.options.get(TriggerBindOption.HANDLER_NAME);
+                    if (String.isBlank(handlerName)) {
+                        handlerName = TriggerContext.getClassName(handler);
+                    }
+                    if (!TriggerContext.handlersToBeSkipped.contains(handlerName)) {
                         handler.handle(context, service);
                     }
                 } catch(TriggerDispatcherException error) {
@@ -61,8 +65,13 @@ public with sharing class TriggerRunner {
                 handlerWrapper.options.put(TriggerBindOption.SERVICE, service);
                 handlerWrapper.options.put(TriggerBindOption.ERROR_HANDLER, errorHandler);
 
+                String handlerName = (String) handlerWrapper.options.get(TriggerBindOption.HANDLER_NAME);
+                if (String.isBlank(handlerName)) {
+                    handlerName = TriggerContext.getClassName(handler);
+                }
+
                 IAsyncHandlerContainer container = asyncHandlerContainersMap.get(handlerWrapper.asyncHandlerType);
-                if (container != null && !TriggerContext.handlersToBeSkipped.contains(TriggerContext.getClassName(handler))) {
+                if (container != null && !TriggerContext.handlersToBeSkipped.contains(handlerName)) {
                     context.cloneTriggeredRecords();
                     container.execute(context.clone(), handler, handlerWrapper.options);
                 }
