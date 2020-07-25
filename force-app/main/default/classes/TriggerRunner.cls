@@ -72,7 +72,7 @@ public with sharing class TriggerRunner {
 
                 IAsyncHandlerContainer container = asyncHandlerContainersMap.get(handlerWrapper.asyncHandlerType);
                 if (container != null && !TriggerContext.handlersToBeSkipped.contains(handlerName)) {
-                    context.cloneTriggeredRecords();
+                    context.cloneTriggerContext();
                     container.execute(context.clone(), handler, handlerWrapper.options);
                 }
                 handlerWrapper.alreadyExecuted = true;

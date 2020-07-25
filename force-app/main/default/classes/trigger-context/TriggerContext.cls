@@ -4,15 +4,20 @@
 
 global with sharing class TriggerContext {
 
-    private List<SObject> clonedNewList {get;set;}
-    private List<SObject> clonedOldList {get;set;}
-    private Map<Id, SObject> clonedNewMap {get;set;}
-    private Map<Id, SObject> clonedOldMap {get;set;}
+    private List<SObject> clonedNewList;
+    private List<SObject> clonedOldList;
+    private Map<Id, SObject> clonedNewMap;
+    private Map<Id, SObject> clonedOldMap;
+    private TriggerOperation clonedTriggerEvent;
+    private TriggerType clonedTriggerType;
 
     global TriggerOperation triggerEvent {
         get {
             if (Test.isRunningTest()) {
                 return TriggerOperation.BEFORE_INSERT;
+            }
+            if (!Trigger.isExecuting) {
+                return clonedTriggerEvent;
             }
             return Trigger.operationType;
         }
@@ -21,6 +26,9 @@ global with sharing class TriggerContext {
         get {
             if (Test.isRunningTest()) {
                 return TriggerType.BEFORE;
+            }
+            if (!Trigger.isExecuting) {
+                return clonedTriggerType;
             }
             return Trigger.isAfter ? TriggerType.AFTER : TriggerType.BEFORE;
         }
@@ -32,7 +40,7 @@ global with sharing class TriggerContext {
     }
     global AsyncHandlerType asyncRunType {
         get {
-            if (System.isFuture()) {
+            if (System.isFuture() || System.isBatch() || System.isQueueable()) {
                 return AsyncHandlerType.FUTURE;
             } else if (System.isScheduled()) {
                 return AsyncHandlerType.SCHEDULABLE;
@@ -87,11 +95,13 @@ global with sharing class TriggerContext {
     }
 
 
-    public void cloneTriggeredRecords() {
+    public void cloneTriggerContext() {
         this.clonedNewList = Trigger.new;
         this.clonedOldList = Trigger.old;
         this.clonedNewMap = Trigger.newMap;
         this.clonedOldMap = Trigger.oldMap;
+        this.clonedTriggerEvent = triggerEvent;
+        this.clonedTriggerType = predOrPost;
     }
 
     global static void skipAllHandlers() {
