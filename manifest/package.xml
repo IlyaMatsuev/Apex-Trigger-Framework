@@ -51,6 +51,7 @@
         <members>NotATriggerContext</members>
         <members>NoDelayForSchedulableRun</members>
         <members>NotAllowedDelayForFutureRun</members>
+        <members>CannotSetTriggerContext</members>
         <name>CustomLabel</name>
     </types>
     <version>48.0</version>

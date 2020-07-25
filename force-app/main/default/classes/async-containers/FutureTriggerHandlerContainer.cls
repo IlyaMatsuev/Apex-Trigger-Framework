@@ -2,7 +2,7 @@
  * Created by Ilya Matsuev on 7/4/2020.
  */
 
-public with sharing class FutureTriggerHandlerContainer implements Queueable, IAsyncHandlerContainer {
+public with sharing class FutureTriggerHandlerContainer implements Queueable, IAsyncHandlerContainer, Database.AllowsCallouts {
 
     private TriggerContext context;
     private ITriggerHandler handler;
