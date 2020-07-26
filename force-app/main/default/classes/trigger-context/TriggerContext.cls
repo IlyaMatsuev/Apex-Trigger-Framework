@@ -4,6 +4,8 @@
 
 global with sharing class TriggerContext {
 
+    private final String DEV_ORG_ID = '00D2v000001Xc0dEAC';
+
     private List<SObject> clonedNewList;
     private List<SObject> clonedOldList;
     private Map<Id, SObject> clonedNewMap;
@@ -13,7 +15,7 @@ global with sharing class TriggerContext {
 
     global TriggerOperation triggerEvent {
         get {
-            if (Test.isRunningTest()) {
+            if (runningTest()) {
                 return TriggerOperation.BEFORE_INSERT;
             }
             if (!Trigger.isExecuting) {
@@ -24,7 +26,7 @@ global with sharing class TriggerContext {
     }
     global TriggerType predOrPost {
         get {
-            if (Test.isRunningTest()) {
+            if (runningTest()) {
                 return TriggerType.BEFORE;
             }
             if (!Trigger.isExecuting) {
@@ -122,5 +124,9 @@ global with sharing class TriggerContext {
 
     public static String getClassName(Object obj) {
         return String.valueOf(obj).split(':').get(0);
+    }
+
+    private Boolean runningTest() {
+        return Test.isRunningTest() && UserInfo.getOrganizationId() == DEV_ORG_ID;
     }
 }
