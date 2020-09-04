@@ -5,44 +5,6 @@
         <name>ApexClass</name>
     </types>
     <types>
-        <members>*</members>
-        <name>ApexComponent</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>ApexPage</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>ApexTestSuite</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>ApexTrigger</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>AuraDefinitionBundle</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>LightningComponentBundle</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>StaticResource</name>
-    </types>
-    <types>
-        <members>Bot_Site_Url</members>
-        <members>Connect_Project_Command</members>
-        <members>GitLab_API</members>
-        <members>GitLab_Webhook_Route</members>
-        <members>Set_Token_Command</members>
-        <members>Set_Token_Info</members>
-        <members>Show_Commands</members>
-        <members>Start_Command</members>
-        <members>Telegram_API</members>
-        <members>Telegram_Webhook_Route</members>
         <members>BindingOnlyForAsyncHandlers</members>
         <members>BindingOnlyForSyncHandlers</members>
         <members>InstanceCannotBeNull</members>
