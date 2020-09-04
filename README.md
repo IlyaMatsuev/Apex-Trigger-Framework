@@ -15,19 +15,23 @@ Enjoy!
 
 ## Installation
 
-Clone the repository and create your scratch org to test it out.
+Clone the repository
 
 ```bash
 git clone https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library.git
 cd apex-trigger-helper-library
-sfdx force:org:create -f ./config/project-scratch-def.json -a <ORG_ALIAS>
-sfdx force:source:push -u <ORG_ALIAS>
+```
+
+Run the script and follow the instructions to prepare your scratch
+
+```bash
+./scripts/sh/upload-scratch.sh <SCRATCH_ALIAS> <DEV_HUB_ALIAS>
 ```
 
 Or deploy it to production
 
 ```bash
-sfdx force:source:deploy -u <ORG_ALIAS> -p ./force-app
+./scripts/sh/upload-prod.sh <ORG_ALIAS>
 ```
 
 ## Usage
