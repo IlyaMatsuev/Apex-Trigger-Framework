@@ -1,6 +1,6 @@
 # Apex-Trigger-Helper-Library
 
-This is an Apex library for dealing with post data handling with Apex triggers. It can be as a foundation for your trigger logic structure.
+The Apex library for improving the way of working with Apex triggers by providing useful features. It can be as a foundation for your trigger logic structure.
 
 ## Features
 
