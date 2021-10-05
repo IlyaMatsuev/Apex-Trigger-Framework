@@ -7,10 +7,12 @@ public with sharing class AsyncTriggerRunTest {
 
     @IsTest
     public static void positiveOnlyHandlerFutureRun() {
+        TriggerContext.runningTests = true;
+
         Test.startTest();
         TriggerDispatcher.dispatcher
-                .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.FUTURE, new AccountTriggerTestHandler())
-                .run();
+            .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.FUTURE, new AccountTriggerTestHandler())
+            .run();
         Test.stopTest();
 
         List<Account> newAccounts = [SELECT Name, Description FROM Account];
@@ -22,15 +24,13 @@ public with sharing class AsyncTriggerRunTest {
     }
 
     @IsTest
-    public static void positiveHandlerAndServiceFutureRun() {
+    public static void positiveHandlerFutureRun() {
+        TriggerContext.runningTests = true;
+
         Test.startTest();
-        Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object> {
-                TriggerBindOption.SERVICE => new AccountTriggerTestService()
-        };
         TriggerDispatcher.dispatcher
-                .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.FUTURE, new AccountTriggerTestHandler(), options)
-                .setDefaultService(new AccountTriggerTestService())
-                .run();
+            .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.FUTURE, new AccountTriggerTestHandler())
+            .run();
         Test.stopTest();
 
         List<Account> newAccounts = [SELECT Name, Description FROM Account];
@@ -42,17 +42,17 @@ public with sharing class AsyncTriggerRunTest {
     }
 
     @IsTest
-    public static void positiveHandlerServiceAndErrorHandlerFutureRun() {
+    public static void positiveHandlerAndErrorHandlerFutureRun() {
+        TriggerContext.runningTests = true;
+
         Test.startTest();
         Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object> {
-                TriggerBindOption.SERVICE => new AccountTriggerTestService(),
-                TriggerBindOption.ERROR_HANDLER => new AccountTriggerTestErrorHandler()
+            TriggerBindOption.ERROR_HANDLER => new AccountTriggerTestErrorHandler()
         };
         TriggerDispatcher.dispatcher
-                .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.FUTURE, new AccountTriggerTestHandler(true), options)
-                .setDefaultService(new AccountTriggerTestService())
-                .setDefaultErrorHandler(new AccountTriggerTestErrorHandler())
-                .run();
+            .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.FUTURE, new AccountTriggerTestHandler(true), options)
+            .setDefaultErrorHandler(new AccountTriggerTestErrorHandler())
+            .run();
         Test.stopTest();
 
         List<Account> newAccounts = [SELECT Name, Description FROM Account];
@@ -66,20 +66,22 @@ public with sharing class AsyncTriggerRunTest {
 
     @IsTest
     public static void positiveOnlyHandlerScheduleRun() {
+        TriggerContext.runningTests = true;
+
         Integer countJobsBefore = [SELECT COUNT() FROM CronTrigger];
         Test.startTest();
         Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object> {
-                TriggerBindOption.DELAY => 1
+            TriggerBindOption.DELAY => 1
         };
         TriggerDispatcher.dispatcher
-                .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.SCHEDULABLE, new AccountTriggerTestHandler(), options)
-                .run();
+            .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.SCHEDULABLE, new AccountTriggerTestHandler(), options)
+            .run();
 
         // Needed to test how the scheduled batch will run
         ScheduleTriggerHandlerContainer schedulableContainer = new ScheduleTriggerHandlerContainer(
-                TriggerContextBuilder.getContext(),
-                new AccountTriggerTestHandler(),
-                options
+            new TriggerContext(),
+            new AccountTriggerTestHandler(),
+            options
         );
         schedulableContainer.execute(null, null);
 
@@ -97,23 +99,23 @@ public with sharing class AsyncTriggerRunTest {
     }
 
     @IsTest
-    public static void positiveHandlerAndServiceScheduleRun() {
+    public static void positiveHandlerScheduleRun() {
+        TriggerContext.runningTests = true;
+
         Integer countJobsBefore = [SELECT COUNT() FROM CronTrigger];
         Test.startTest();
         Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object> {
-                TriggerBindOption.SERVICE => new AccountTriggerTestService(),
-                TriggerBindOption.DELAY => 1
+            TriggerBindOption.DELAY => 1
         };
         TriggerDispatcher.dispatcher
-                .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.SCHEDULABLE, new AccountTriggerTestHandler(), options)
-                .setDefaultService(new AccountTriggerTestService())
-                .run();
+            .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.SCHEDULABLE, new AccountTriggerTestHandler(), options)
+            .run();
 
         // Needed to test how the scheduled batch will run
         ScheduleTriggerHandlerContainer schedulableContainer = new ScheduleTriggerHandlerContainer(
-                TriggerContextBuilder.getContext(),
-                new AccountTriggerTestHandler(),
-                options
+            new TriggerContext(),
+            new AccountTriggerTestHandler(),
+            options
         );
         schedulableContainer.execute(null, null);
 
@@ -131,25 +133,25 @@ public with sharing class AsyncTriggerRunTest {
     }
 
     @IsTest
-    public static void positiveHandlerServiceAndErrorHandlerScheduleRun() {
+    public static void positiveHandlerAndErrorHandlerScheduleRun() {
+        TriggerContext.runningTests = true;
+
         Integer countJobsBefore = [SELECT COUNT() FROM CronTrigger];
         Test.startTest();
         Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object> {
-                TriggerBindOption.SERVICE => new AccountTriggerTestService(),
-                TriggerBindOption.ERROR_HANDLER => new AccountTriggerTestErrorHandler(),
-                TriggerBindOption.DELAY => 1
+            TriggerBindOption.ERROR_HANDLER => new AccountTriggerTestErrorHandler(),
+            TriggerBindOption.DELAY => 1
         };
         TriggerDispatcher.dispatcher
-                .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.SCHEDULABLE, new AccountTriggerTestHandler(true), options)
-                .setDefaultService(new AccountTriggerTestService())
-                .setDefaultErrorHandler(new AccountTriggerTestErrorHandler())
-                .run();
+            .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.SCHEDULABLE, new AccountTriggerTestHandler(true), options)
+            .setDefaultErrorHandler(new AccountTriggerTestErrorHandler())
+            .run();
 
         // Needed to test how the scheduled batch will run
         ScheduleTriggerHandlerContainer schedulableContainer = new ScheduleTriggerHandlerContainer(
-                TriggerContextBuilder.getContext(),
-                new AccountTriggerTestHandler(true),
-                options
+            new TriggerContext(),
+            new AccountTriggerTestHandler(true),
+            options
         );
         schedulableContainer.execute(null, null);
 
@@ -166,7 +168,6 @@ public with sharing class AsyncTriggerRunTest {
         System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccount.Description);
     }
 
-
     private class AccountTriggerTestHandler implements ITriggerHandler {
 
         private Boolean throwException = false;
@@ -177,8 +178,7 @@ public with sharing class AsyncTriggerRunTest {
             this.throwException = throwException;
         }
 
-
-        public void handle(TriggerContext context, ITriggerService service) {
+        public void handle(TriggerContext context) {
             TriggerOperation triggerEvent = context.triggerEvent;
             TriggerType triggerType = context.predOrPost;
             AsyncHandlerType asyncHandlerType = context.asyncRunType;
@@ -196,12 +196,6 @@ public with sharing class AsyncTriggerRunTest {
 
             Account testAccount = new Account(Name = 'test', Description = triggerEvent.name());
 
-            if (service != null) {
-                service.insertRelatedRecords();
-                service.updateRelatedRecords();
-                service.deleteRelatedRecords();
-            }
-
             if (throwException) {
                 throw new CalloutException('Error handling test');
             }
@@ -210,17 +204,7 @@ public with sharing class AsyncTriggerRunTest {
         }
     }
 
-    private class AccountTriggerTestService implements ITriggerService {
-
-        public void insertRelatedRecords() {}
-
-        public void updateRelatedRecords() {}
-
-        public void deleteRelatedRecords() {}
-    }
-
     private class AccountTriggerTestErrorHandler implements ITriggerErrorHandler {
-
         public void handle(TriggerContext context, Exception error) {
             TriggerContext.skipAllHandlers();
             insert new Account(Name = error.getMessage(), Description = context.properties.get('event').toString());

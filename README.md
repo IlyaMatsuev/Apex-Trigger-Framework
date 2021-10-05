@@ -1,7 +1,6 @@
 # Apex-Trigger-Helper-Library
 
-This is an Apex library for dealing with post data handling with Apex triggers. It can be as a foundation for your trigger logic architecture.
-Enjoy!
+This is an Apex library for dealing with post data handling with Apex triggers. It can be as a foundation for your trigger logic structure.
 
 ## Features
 
@@ -9,7 +8,6 @@ Enjoy!
   - Exchanging parameters between all handlers (from one to other and in reverse) - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#properties)
   - Opportunity to skip particular handlers (or all of them) - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#skipallhandlers)
   - Setting trigger error handler instance for a particular handler or for all of them - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#TriggerDispatcher)
-  - Setting trigger service instance for a particular handler or for all of them (**Still in development**) - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#TriggerDispatcher)
   - Binding asynchronous trigger handlers - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#bindAsync)
   - Scheduling handlers to run in a particular time (for instance, in 3 minutes) - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#bindAsync)
 
@@ -34,6 +32,14 @@ Or deploy it to production
 ./scripts/sh/upload-prod.sh <ORG_ALIAS>
 ```
 
+You can also install the package via the SFDX CLI
+
+```bash
+sfdx force:package:install --wait 10 --publishwait 10 -p im/trigger-helper@1.0.0-2 --noprompt -u <ORG_ALIAS>
+```
+
+Another option is to just to install it manually for a [sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t5g000000MF85AAG) or [production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5g000000MF85AAG) org.
+
 ## Usage
 
 Trigger definition used the library would look something like this
@@ -48,9 +54,9 @@ trigger AccountTrigger on Account (before insert, before update, before delete, 
             .run();
 }
 ```
-In the example above there are two sync [`bind()`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#bind) and 2 async [`bindAsync()`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#bindAsync) handlers for the Account trigger. Also there is a setting of a default error handler [`setDefaultErrorHandler()`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#setdefaulterrorhandler) that will handle exceptions appearing in the handlers by default. To run all binded handlers we use the [`run()`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#run) method.
+In the example above there are two sync [`bind()`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#bind) and two async [`bindAsync()`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#bindAsync) handlers for the Account trigger. Also there is a setting of a default error handler [`setDefaultErrorHandler()`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#setdefaulterrorhandler) that will handle exceptions appearing in the handlers by default. To run all binded handlers we use the [`run()`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#run) method.
 
-Trigger handlers are required to implement the [`ITriggerHandler`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#itriggerhandler) interface which includes only one method [`handle(TriggerContext context, ITriggerService service)`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#handle). The first argument is a trigger context that is the same instance for all trigger handlers. The second is a trigger service instance that you could set up for your handler(s) and use it as an utility variable.
+Trigger handlers are required to implement the [`ITriggerHandler`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#itriggerhandler) interface which includes only one method [`handle(TriggerContext context)`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#handle). The argument is a trigger context that is the same instance for all trigger handlers.
 
 Trigger error handlers are required to implement the [`ITriggerErrorHandler`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#itriggererrorhandler). This is the method that will handle thrown errors. First argument is trigger context. The second one is an instance of Exception.
 
@@ -61,9 +67,6 @@ Class representing an object for binding the trigger handlers.
 
 ###### **`dispatcher`**
 A single instance of a dispatcher. Your are able to instantiate the dispatcher only by using this property. 
-
-###### **`defaultService`**
-An instance of an `ITriggerService` interface that is default for all handlers.
 
 ###### **`defaultErrorHandler`**
 An instance of an `ITriggerErrorHandler` interface that is default for all handlers.
@@ -82,11 +85,6 @@ Parameters:
 `asyncHandlerType` - instance of an [`AsyncHandlerType`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#asynchandlertype) enum representing async handler execution type (**Still in development**);  
 `handler` - instance of an [`ITriggerHandler`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#itriggerhandler) interface that is a class containing handler business logic;  
 `options` - map of [`TriggerBindOption`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#triggerbindoption) options for a handler binding.
-
-###### **`setDefaultService()`**
-Setter of a default service for all handlers.  
-Parameters:  
-`service` - instance of an [`ITriggerService`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#itriggerservice) interface containing service business logic.
 
 ###### **`setDefaultErrorHandler()`**
 Setter of a default error handler for all handlers.  
@@ -150,8 +148,7 @@ The interface for declaration classes that will be used as handlers in triggers.
 ###### **`handle()`**
 Start entry for a trigger handler.  
 Parameters:  
-`context` - instance of a [`TriggerContext`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#triggercontext) representing a context of the current trigger execution;  
-`service` - instance of an [`ITriggerService`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#itriggerservice) interface representing a service object for the handler.
+`context` - instance of a [`TriggerContext`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#triggercontext) representing a context of the current trigger execution;
 &nbsp;
 
 ##### `ITriggerErrorHandler`
@@ -161,10 +158,6 @@ Start entry for a trigger handler.
 Parameters:  
 `context` - instance of a [`TriggerContext`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#triggercontext) representing a context of the current trigger execution;  
 `error` - exception that caused the executing of the error handler.
-&nbsp;
-
-##### `ITriggerService` (**In Development**)
-The interface containing some main methods needed for processing trigger handlers.
 &nbsp;
 
 ##### `TriggerType`
@@ -181,7 +174,6 @@ The enum for specifying the type of async trigger handler declaration.
 
 ##### `TriggerBindOption`
 The enum for specifying the options for a trigger handler declaration.  
-###### **`SERVICE`** - indicate an option for an [`ITriggerService`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#itriggerservice) instance for a particular handler;  
 ###### **`ERROR_HANDLER`** - indicate an option for an [`ITriggerErrorHandler`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#itriggererrorhandler) instance for a particular handler;  
 ###### **`DELAY`** - indicate a delay in minutes for the _SCHEDULABLE_ [`AsyncHandlerType`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#asynchandlertype);  
 ###### **`JOB_PREFIX`** - indicate a prefix for a job that will be created if you run with the _SCHEDULABLE_ [`AsyncHandlerType`](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#asynchandlertype). Default value is the handler class name;  

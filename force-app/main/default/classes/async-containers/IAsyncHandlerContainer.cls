@@ -3,6 +3,5 @@
  */
 
 public interface IAsyncHandlerContainer {
-
     void execute(TriggerContext context, ITriggerHandler handler, Map<TriggerBindOption, Object> options);
 }

@@ -7,10 +7,12 @@ public with sharing class SyncTriggerRunTest {
 
     @IsTest
     public static void positiveOnlyHandlerRun() {
+        TriggerContext.runningTests = true;
+
         Test.startTest();
         TriggerDispatcher.dispatcher
-                .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler())
-                .run();
+            .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler())
+            .run();
         Test.stopTest();
 
         List<Account> newAccounts = [SELECT Name, Description FROM Account];
@@ -22,37 +24,17 @@ public with sharing class SyncTriggerRunTest {
     }
 
     @IsTest
-    public static void positiveHandlerAndServiceRun() {
+    public static void positiveHandlerAndErrorHandlerRun() {
+        TriggerContext.runningTests = true;
+
         Test.startTest();
         Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object> {
-                TriggerBindOption.SERVICE => new AccountTriggerTestService()
+            TriggerBindOption.ERROR_HANDLER => new AccountTriggerTestErrorHandler()
         };
         TriggerDispatcher.dispatcher
-                .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler(), options)
-                .setDefaultService(new AccountTriggerTestService())
-                .run();
-        Test.stopTest();
-
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(1, newAccounts.size());
-
-        Account newAccount = newAccounts.get(0);
-        System.assertEquals('test', newAccount.Name);
-        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccount.Description);
-    }
-
-    @IsTest
-    public static void positiveHandlerServiceAndErrorHandlerRun() {
-        Test.startTest();
-        Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object> {
-                TriggerBindOption.SERVICE => new AccountTriggerTestService(),
-                TriggerBindOption.ERROR_HANDLER => new AccountTriggerTestErrorHandler()
-        };
-        TriggerDispatcher.dispatcher
-                .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler(true), options)
-                .setDefaultService(new AccountTriggerTestService())
-                .setDefaultErrorHandler(new AccountTriggerTestErrorHandler())
-                .run();
+            .bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler(true), options)
+            .setDefaultErrorHandler(new AccountTriggerTestErrorHandler())
+            .run();
         Test.stopTest();
 
         List<Account> newAccounts = [SELECT Name, Description FROM Account];
@@ -62,7 +44,6 @@ public with sharing class SyncTriggerRunTest {
         System.assertEquals('Error handling test', newAccount.Name);
         System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccount.Description);
     }
-
 
     private class AccountTriggerTestHandler implements ITriggerHandler {
 
@@ -75,7 +56,7 @@ public with sharing class SyncTriggerRunTest {
         }
 
 
-        public void handle(TriggerContext context, ITriggerService service) {
+        public void handle(TriggerContext context) {
             TriggerOperation triggerEvent = context.triggerEvent;
             TriggerType triggerType = context.predOrPost;
             AsyncHandlerType asyncHandlerType = context.asyncRunType;
@@ -92,12 +73,6 @@ public with sharing class SyncTriggerRunTest {
 
             Account testAccount = new Account(Name = 'test', Description = triggerEvent.name());
 
-            if (service != null) {
-                service.insertRelatedRecords();
-                service.updateRelatedRecords();
-                service.deleteRelatedRecords();
-            }
-
             if (throwException) {
                 throw new CalloutException('Error handling test');
             }
@@ -106,17 +81,7 @@ public with sharing class SyncTriggerRunTest {
         }
     }
 
-    private class AccountTriggerTestService implements ITriggerService {
-
-        public void insertRelatedRecords() {}
-
-        public void updateRelatedRecords() {}
-
-        public void deleteRelatedRecords() {}
-    }
-
     private class AccountTriggerTestErrorHandler implements ITriggerErrorHandler {
-
         public void handle(TriggerContext context, Exception error) {
             TriggerContext.skipAllHandlers();
             insert new Account(Name = error.getMessage(), Description = context.properties.get('event').toString());

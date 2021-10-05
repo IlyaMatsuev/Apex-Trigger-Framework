@@ -25,13 +25,12 @@ public with sharing class FutureTriggerHandlerContainer implements Queueable, IA
     }
 
     public void execute(QueueableContext queueableContext) {
-        ITriggerService service = (ITriggerService) options.get(TriggerBindOption.SERVICE);
-        ITriggerErrorHandler errorHandler = (ITriggerErrorHandler) options.get(TriggerBindOption.ERROR_HANDLER);
         try {
-            handler.handle(context, service);
+            handler.handle(context);
         } catch(TriggerDispatcherException error) {
             throw error;
         } catch(Exception error) {
+            ITriggerErrorHandler errorHandler = (ITriggerErrorHandler) options.get(TriggerBindOption.ERROR_HANDLER);
             if (errorHandler == null) {
                 throw error;
             } else {

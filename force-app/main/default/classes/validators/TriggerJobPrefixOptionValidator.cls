@@ -3,7 +3,6 @@
  */
 
 public with sharing class TriggerJobPrefixOptionValidator implements ITriggerOptionsValidator {
-
     public Boolean validate(Object jobPrefixObject) {
         if (!(jobPrefixObject instanceof String)) {
             throw new TriggerDispatcherException(Label.InstanceNotOfRequiredType.replace('%%%', 'job prefix').replace('###', 'String'));

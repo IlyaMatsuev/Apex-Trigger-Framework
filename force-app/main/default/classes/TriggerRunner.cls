@@ -27,13 +27,12 @@ public with sharing class TriggerRunner {
                 try {
                     checkSyncAndAsyncOptionsInPlace(handlerWrapper.options.keySet(), true);
                     ITriggerHandler handler = handlerWrapper.handler;
-                    ITriggerService service = handlerWrapper.service == null ? dispatcher.defaultService : handlerWrapper.service;
                     String handlerName = (String) handlerWrapper.options.get(TriggerBindOption.HANDLER_NAME);
                     if (String.isBlank(handlerName)) {
                         handlerName = TriggerContext.getClassName(handler);
                     }
                     if (!TriggerContext.handlersToBeSkipped.contains(handlerName)) {
-                        handler.handle(context, service);
+                        handler.handle(context);
                     }
                 } catch(TriggerDispatcherException error) {
                     throw error;
@@ -60,9 +59,7 @@ public with sharing class TriggerRunner {
             if (handlerWrapper.triggerEvent == context.triggerEvent && !handlerWrapper.alreadyExecuted) {
                 checkSyncAndAsyncOptionsInPlace(handlerWrapper.options.keySet(), false);
                 ITriggerHandler handler = handlerWrapper.handler;
-                ITriggerService service = handlerWrapper.service == null ? dispatcher.defaultService : handlerWrapper.service;
                 ITriggerErrorHandler errorHandler = handlerWrapper.errorHandler == null ? dispatcher.defaultErrorHandler : handlerWrapper.errorHandler;
-                handlerWrapper.options.put(TriggerBindOption.SERVICE, service);
                 handlerWrapper.options.put(TriggerBindOption.ERROR_HANDLER, errorHandler);
 
                 String handlerName = (String) handlerWrapper.options.get(TriggerBindOption.HANDLER_NAME);
@@ -79,7 +76,6 @@ public with sharing class TriggerRunner {
             }
         }
     }
-
 
     private static void checkSyncAndAsyncOptionsInPlace(Set<TriggerBindOption> options, Boolean sync) {
         Set<TriggerBindOption> unavailableOptions = sync ? onlyAsyncOptions : onlySyncOptions;

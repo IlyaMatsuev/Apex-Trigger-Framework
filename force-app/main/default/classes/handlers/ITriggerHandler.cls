@@ -3,6 +3,5 @@
  */
 
 global interface ITriggerHandler {
-
-    void handle(TriggerContext context, ITriggerService service);
+    void handle(TriggerContext context);
 }

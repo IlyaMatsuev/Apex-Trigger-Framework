@@ -18,7 +18,6 @@ public with sharing class ScheduleTriggerHandlerContainer implements Database.Ba
         this.options = options;
     }
 
-
     public void execute(TriggerContext context, ITriggerHandler handler, Map<TriggerBindOption, Object> options) {
         Integer delayMinutes = (Integer) options.get(TriggerBindOption.DELAY);
         String jobPrefix = (String) options.get(TriggerBindOption.JOB_PREFIX);
@@ -33,13 +32,12 @@ public with sharing class ScheduleTriggerHandlerContainer implements Database.Ba
     }
 
     public void execute(Database.BatchableContext batchableContext, List<SObject> scope) {
-        ITriggerService service = (ITriggerService) options.get(TriggerBindOption.SERVICE);
-        ITriggerErrorHandler errorHandler = (ITriggerErrorHandler) options.get(TriggerBindOption.ERROR_HANDLER);
         try {
-            handler.handle(context, service);
+            handler.handle(context);
         } catch(TriggerDispatcherException error) {
             throw error;
         } catch(Exception error) {
+            ITriggerErrorHandler errorHandler = (ITriggerErrorHandler) options.get(TriggerBindOption.ERROR_HANDLER);
             if (errorHandler == null) {
                 throw error;
             } else {
@@ -49,7 +47,7 @@ public with sharing class ScheduleTriggerHandlerContainer implements Database.Ba
     }
 
     public List<SObject> start(Database.BatchableContext batchableContext) {
-        return [SELECT Id FROM Account LIMIT 0];
+        return [SELECT Id FROM User LIMIT 1];
     }
 
     public void finish(Database.BatchableContext batchableContext) {}

@@ -3,7 +3,6 @@
  */
 
 public with sharing class TriggerDelayOptionValidator implements ITriggerOptionsValidator {
-
     public Boolean validate(Object delayObject) {
         if (delayObject == null) {
             throw new TriggerDispatcherException(Label.InstanceCannotBeNull.replace('%%%', 'delay'));

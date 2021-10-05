@@ -13,7 +13,6 @@ global with sharing class TriggerDispatcher {
         }
         private set;
     }
-    global ITriggerService defaultService { get; private set; }
     global ITriggerErrorHandler defaultErrorHandler { get; private set; }
 
     private TriggerContext context { get; set; }
@@ -31,7 +30,7 @@ global with sharing class TriggerDispatcher {
             throw new TriggerDispatcherException(Label.NotATriggerContext);
         }
         if (context == null) {
-            context = TriggerContextBuilder.getContext();
+            context = new TriggerContext();
         }
         TriggerRunner.runSyncHandlers(context, handlersMap.clone());
         TriggerRunner.runAsyncHandlers(context, asyncHandlersMap.clone());
@@ -56,14 +55,6 @@ global with sharing class TriggerDispatcher {
 
     global TriggerDispatcher bindAsync(TriggerOperation event, AsyncHandlerType asyncHandlerType, ITriggerHandler handler, Map<TriggerBindOption, Object> options) {
         asyncHandlersMap.add(new TriggerHandlerWrapper(event, asyncHandlerType, handler, options));
-        return this;
-    }
-
-    global TriggerDispatcher setDefaultService(ITriggerService service) {
-        if (service == null) {
-            throw new TriggerDispatcherException(Label.InstanceCannotBeNull.replace('%%%', 'service'));
-        }
-        defaultService = service;
         return this;
     }
 

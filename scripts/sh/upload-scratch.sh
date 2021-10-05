@@ -27,6 +27,10 @@ echo "Deploying to $scratch_alias..."
 sfdx force:source:push -u "$scratch_alias"
 
 echo
+echo "Assigning permissions..."
+sfdx force:user:permset:assign -n TriggerHelperUser -u "$scratch_alias"
+
+echo
 sfdx force:org:open -u "$scratch_alias"
 
 rm debug.log

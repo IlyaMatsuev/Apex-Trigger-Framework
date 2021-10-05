@@ -16,6 +16,10 @@ echo "Deploying to $org_alias..."
 sfdx force:source:deploy -u "$org_alias" -p ./force-app
 
 echo
+echo "Assigning permissions..."
+sfdx force:user:permset:assign -n TriggerHelperUser -u "$scratch_alias"
+
+echo
 sfdx force:org:open -u "$org_alias"
 
 rm debug.log

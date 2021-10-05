@@ -3,7 +3,6 @@
  */
 
 public with sharing class TriggerErrorHandlerOptionValidator implements ITriggerOptionsValidator {
-
     public Boolean validate(Object errorHandlerObject) {
         if (errorHandlerObject == null) {
             throw new TriggerDispatcherException(Label.InstanceCannotBeNull.replace('%%%', 'error handler'));

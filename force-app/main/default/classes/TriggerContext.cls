@@ -4,14 +4,14 @@
 
 global with sharing class TriggerContext {
 
-    private final String DEV_ORG_ID = '00D2v000001Xc0dEAC';
-
     private List<SObject> clonedNewList;
     private List<SObject> clonedOldList;
     private Map<Id, SObject> clonedNewMap;
     private Map<Id, SObject> clonedOldMap;
     private TriggerOperation clonedTriggerEvent;
     private TriggerType clonedTriggerType;
+
+    global static Boolean runningTests { get; set; }
 
     global TriggerOperation triggerEvent {
         get {
@@ -82,10 +82,10 @@ global with sharing class TriggerContext {
             return Trigger.oldMap;
         }
     }
-    global final Map<String, Object> properties {get; private set;}
+    global final Map<String, Object> properties { get; private set; }
 
-    global static Boolean skippingAllHandlers {get; private set;}
-    global static final Set<String> handlersToBeSkipped {get; private set;}
+    global static Boolean skippingAllHandlers { get; private set; }
+    global static final Set<String> handlersToBeSkipped { get; private set; }
 
     static {
         skippingAllHandlers = false;
@@ -127,6 +127,6 @@ global with sharing class TriggerContext {
     }
 
     private Boolean runningTest() {
-        return Test.isRunningTest() && UserInfo.getOrganizationId() == DEV_ORG_ID;
+        return Test.isRunningTest() && runningTests;
     }
 }
