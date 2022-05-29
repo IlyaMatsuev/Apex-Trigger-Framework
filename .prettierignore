@@ -1,5 +1,23 @@
-**/staticresources/**
-.localdevserver
-.sfdx
+# IDE
+**/.idea/
 
-coverage/
+# SFDX
+.sfdx/
+.localdevserver
+**/staticresources/
+
+# Dependencies
+**/node_modules/
+**/package-lock.json
+
+# Build
+**/build/
+**/dist/
+
+# System Files
+.DS_Store
+*.db
+*.ini
+
+# Logs
+*.log

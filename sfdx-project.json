@@ -1,19 +1,15 @@
 {
     "packageDirectories": [
         {
-            "path": "./force-app",
+            "path": "./src",
             "default": true,
-            "package": "im/trigger-helper",
+            "package": "apex-trigger-framework",
             "versionName": "Version 1.0",
             "versionNumber": "1.0.0.NEXT"
         }
     ],
-    "name": "im/trigger-helper",
+    "name": "apex-trigger-framework",
     "namespace": "",
     "sfdcLoginUrl": "https://login.salesforce.com",
-    "sourceApiVersion": "48.0",
-    "packageAliases": {
-        "im/trigger-helper": "0Ho5g000000oM66CAE",
-        "im/trigger-helper@1.0.0-2": "04t5g000000MF85AAG"
-    }
+    "sourceApiVersion": "52.0"
 }
