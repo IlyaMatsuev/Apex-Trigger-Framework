@@ -1,79 +1,106 @@
-/**
- * Created by Ilya Matsuev on 7/1/2020.
- */
+global class TriggerDispatcher {
+    private static final Map<AsyncHandlerType, Type> asyncContainerTypess = new Map<AsyncHandlerType, Type>{
+        AsyncHandlerType.Future => FutureTriggerHandlerContainer.class,
+        AsyncHandlerType.Schedule => ScheduleTriggerHandlerContainer.class
+    };
 
-global with sharing class TriggerDispatcher {
-    global static TriggerDispatcher dispatcher {
+    private final TriggerContext context;
+    private final List<TriggerHandlerWrapper> handlers = new List<TriggerHandlerWrapper>();
+
+    @TestVisible
+    global static TriggerDispatcher prepare {
         get {
-            if (dispatcher == null) {
-                dispatcher = new TriggerDispatcher();
+            if (prepare == null) {
+                prepare = new TriggerDispatcher(new TriggerContext());
             }
-            return dispatcher;
+            return prepare;
         }
         private set;
     }
-    global ITriggerErrorHandler defaultErrorHandler { get; private set; }
 
-    private TriggerContext context { get; set; }
-    private final List<TriggerHandlerWrapper> handlersMap { get; set; }
-    private final List<TriggerHandlerWrapper> asyncHandlersMap { get; set; }
-
-    private TriggerDispatcher() {
-        this.handlersMap = new List<TriggerHandlerWrapper>();
-        this.asyncHandlersMap = new List<TriggerHandlerWrapper>();
+    @TestVisible
+    private TriggerDispatcher(TriggerContext context) {
+        this.context = context;
     }
 
     global void run() {
-        if (!Trigger.isExecuting && !Test.isRunningTest()) {
-            throw new TriggerDispatcherException(Label.NotATriggerContext);
-        }
-        if (context == null) {
-            context = new TriggerContext();
-        }
-        TriggerRunner.runSyncHandlers(context, handlersMap.clone());
-        TriggerRunner.runAsyncHandlers(context, asyncHandlersMap.clone());
-        handlersMap.clear();
-        asyncHandlersMap.clear();
+        run(null);
     }
 
-    global TriggerDispatcher bind(TriggerOperation event, ITriggerHandler handler) {
-        handlersMap.add(new TriggerHandlerWrapper(event, handler));
-        return this;
+    global void run(ITriggerErrorHandler defaultErrorHandler) {
+        if (!Trigger.isExecuting && !Test.isRunningTest()) {
+            throw new TriggerDispatcherException('TriggerDispatcher cannot be ran from the non-trigger context');
+        }
+        runHandlers(defaultErrorHandler);
+        handlers.clear();
+    }
+
+    global TriggerDispatcher bind(TriggerOperation operation, ITriggerHandler handler) {
+        return bind(operation, handler, new Map<TriggerBindOption, Object>());
     }
 
     global TriggerDispatcher bind(
-        TriggerOperation event,
+        TriggerOperation operation,
         ITriggerHandler handler,
         Map<TriggerBindOption, Object> options
     ) {
-        handlersMap.add(new TriggerHandlerWrapper(event, handler, options));
-        return this;
+        return addHandler(operation, handler, false, options);
+    }
+
+    global TriggerDispatcher bindAsync(TriggerOperation operation, ITriggerHandler handler) {
+        return bindAsync(operation, handler, new Map<TriggerBindOption, Object>());
     }
 
     global TriggerDispatcher bindAsync(
-        TriggerOperation event,
-        AsyncHandlerType asyncHandlerType,
-        ITriggerHandler handler
-    ) {
-        asyncHandlersMap.add(new TriggerHandlerWrapper(event, asyncHandlerType, handler));
-        return this;
-    }
-
-    global TriggerDispatcher bindAsync(
-        TriggerOperation event,
-        AsyncHandlerType asyncHandlerType,
+        TriggerOperation operation,
         ITriggerHandler handler,
         Map<TriggerBindOption, Object> options
     ) {
-        asyncHandlersMap.add(new TriggerHandlerWrapper(event, asyncHandlerType, handler, options));
+        return addHandler(operation, handler, true, options);
+    }
+
+    private TriggerDispatcher addHandler(
+        TriggerOperation operation,
+        ITriggerHandler handler,
+        Boolean async,
+        Map<TriggerBindOption, Object> options
+    ) {
+        options.put(TriggerBindOption.Async, async);
+        handlers.add(new TriggerHandlerWrapper(operation, handler, options));
         return this;
     }
 
-    global TriggerDispatcher setDefaultErrorHandler(ITriggerErrorHandler errorHandler) {
-        if (errorHandler == null) {
-            throw new TriggerDispatcherException(Label.InstanceCannotBeNull.replace('%%%', 'error handler'));
+    private void runHandlers(ITriggerErrorHandler defaultErrorHandler) {
+        for (TriggerHandlerWrapper handlerWrapper : handlers) {
+            if (context.skips.skipAll) {
+                break;
+            }
+            if (defaultErrorHandler != null) {
+                handlerWrapper.setDefaultErrorHandler(defaultErrorHandler);
+            }
+            if (!handlerWrapper.isExecuted && handlerWrapper.operation == context.props.operation) {
+                try {
+                    if (context.skips.has(handlerWrapper.name)) {
+                        continue;
+                    }
+                    if (handlerWrapper.isAsync) {
+                        getAsyncHandlerContainer(handlerWrapper.asyncType).execute(context, handlerWrapper);
+                    } else {
+                        handlerWrapper.handle(context);
+                    }
+                } catch (Exception error) {
+                    handlerWrapper.handle(context, error);
+                } finally {
+                    handlerWrapper.executed();
+                }
+            }
         }
-        defaultErrorHandler = errorHandler;
-        return this;
+    }
+
+    private IAsyncHandlerContainer getAsyncHandlerContainer(AsyncHandlerType asyncType) {
+        return (IAsyncHandlerContainer) asyncContainerTypess.get(asyncType).newInstance();
+    }
+
+    global class TriggerDispatcherException extends Exception {
     }
 }

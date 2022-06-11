@@ -1,61 +1,36 @@
-/**
- * Created by Ilya Matsuev on 7/10/2020.
- */
-
-public with sharing class ScheduleTriggerHandlerContainer implements Database.Batchable<SObject>, IAsyncHandlerContainer, Database.AllowsCallouts, Database.Stateful {
-    private TriggerContext context;
-    private ITriggerHandler handler;
-    private Map<TriggerBindOption, Object> options;
-
-    private final String DEFAULT_JOB_PREFIX = 'Schedulable_job-';
+public class ScheduleTriggerHandlerContainer implements Database.Batchable<SObject>, IAsyncHandlerContainer, Database.AllowsCallouts, Database.Stateful {
+    private final TriggerContext context;
+    private final TriggerHandlerWrapper handlerWrapper;
 
     public ScheduleTriggerHandlerContainer() {
     }
 
-    public ScheduleTriggerHandlerContainer(
-        TriggerContext context,
-        ITriggerHandler handler,
-        Map<TriggerBindOption, Object> options
-    ) {
+    public ScheduleTriggerHandlerContainer(TriggerContext context, TriggerHandlerWrapper handlerWrapper) {
         this.context = context;
-        this.handler = handler;
-        this.options = options;
+        this.handlerWrapper = handlerWrapper;
     }
 
-    public void execute(TriggerContext context, ITriggerHandler handler, Map<TriggerBindOption, Object> options) {
-        Integer delayMinutes = (Integer) options.get(TriggerBindOption.DELAY);
-        String jobPrefix = (String) options.get(TriggerBindOption.JOB_PREFIX);
-        if (delayMinutes == null) {
-            throw new TriggerDispatcherException(Label.NoDelayForSchedulableRun);
+    public void execute(TriggerContext context, TriggerHandlerWrapper handlerWrapper) {
+        if (handlerWrapper.delay == null) {
+            throw new TriggerDispatcher.TriggerDispatcherException('No delay value provided to the handler');
         }
-        if (String.isBlank(jobPrefix)) {
-            jobPrefix = DEFAULT_JOB_PREFIX;
-        }
-        String completeJobName = jobPrefix + TriggerContext.getClassName(handler) + '-' + System.now().getTime();
         System.scheduleBatch(
-            new ScheduleTriggerHandlerContainer(context, handler, options),
-            completeJobName,
-            delayMinutes
+            new ScheduleTriggerHandlerContainer(context, handlerWrapper),
+            handlerWrapper.jobName,
+            handlerWrapper.delay
         );
+    }
+
+    public List<SObject> start(Database.BatchableContext batchableContext) {
+        return [SELECT Id FROM Organization LIMIT 1];
     }
 
     public void execute(Database.BatchableContext batchableContext, List<SObject> scope) {
         try {
-            handler.handle(context);
-        } catch (TriggerDispatcherException error) {
-            throw error;
+            handlerWrapper.handle(context);
         } catch (Exception error) {
-            ITriggerErrorHandler errorHandler = (ITriggerErrorHandler) options.get(TriggerBindOption.ERROR_HANDLER);
-            if (errorHandler == null) {
-                throw error;
-            } else {
-                errorHandler.handle(context, error);
-            }
+            handlerWrapper.handle(context, error);
         }
-    }
-
-    public List<SObject> start(Database.BatchableContext batchableContext) {
-        return [SELECT Id FROM User LIMIT 1];
     }
 
     public void finish(Database.BatchableContext batchableContext) {

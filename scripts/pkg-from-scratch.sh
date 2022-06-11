@@ -38,9 +38,5 @@ echo "${green}Deploying to ${scratch_alias}...${reset}"
 sfdx force:source:push -u "$scratch_alias" || { exit 1; }
 
 echo
-echo "${green}Assigning permissions...${reset}"
-sfdx force:user:permset:assign -n TriggerHelperUser -u "$scratch_alias"
-
-echo
 echo "${green}Deployment has been finished."
 echo "Open the org with 'sfdx force:org:open -u ${scratch_alias}'${reset}"
