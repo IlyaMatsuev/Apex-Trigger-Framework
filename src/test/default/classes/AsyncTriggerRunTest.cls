@@ -1,226 +1,205 @@
-/**
- * Created by Ilya Matsuev on 7/11/2020.
- */
-
 @IsTest
-public with sharing class AsyncTriggerRunTest {
+private class AsyncTriggerRunTest {
     @IsTest
-    public static void positiveOnlyHandlerFutureRun() {
-        TriggerContext.runningTests = true;
+    private static void beforeInsertFutureTest() {
+        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
+        TriggerDispatcher.prepare = new TriggerDispatcher(
+            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
+        );
 
         Test.startTest();
-        TriggerDispatcher.dispatcher
-            .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.FUTURE, new AccountTriggerTestHandler())
-            .run();
+        TriggerDispatcher.prepare.bindAsync(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler()).run();
         Test.stopTest();
 
         List<Account> newAccounts = [SELECT Name, Description FROM Account];
         System.assertEquals(1, newAccounts.size());
-
-        Account newAccount = newAccounts.get(0);
-        System.assertEquals('test', newAccount.Name);
-        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccount.Description);
+        System.assertEquals('Test', newAccounts.get(0).Name);
+        System.assertEquals('Test description', newAccounts.get(0).Description);
     }
 
     @IsTest
-    public static void positiveHandlerFutureRun() {
-        TriggerContext.runningTests = true;
+    private static void beforeInsertWithDefaultErrorHandlerFutureTest() {
+        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
+        TriggerDispatcher.prepare = new TriggerDispatcher(
+            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
+        );
 
         Test.startTest();
-        TriggerDispatcher.dispatcher
-            .bindAsync(TriggerOperation.BEFORE_INSERT, AsyncHandlerType.FUTURE, new AccountTriggerTestHandler())
-            .run();
+        TriggerDispatcher.prepare
+            .bindAsync(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler(true))
+            .run(new AccountTriggerTestHandler());
         Test.stopTest();
 
         List<Account> newAccounts = [SELECT Name, Description FROM Account];
         System.assertEquals(1, newAccounts.size());
-
-        Account newAccount = newAccounts.get(0);
-        System.assertEquals('test', newAccount.Name);
-        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccount.Description);
+        System.assertEquals('Error', newAccounts.get(0).Name);
+        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccounts.get(0).Description);
     }
 
     @IsTest
-    public static void positiveHandlerAndErrorHandlerFutureRun() {
-        TriggerContext.runningTests = true;
+    private static void beforeInsertWithErrorHandlerFutureTest() {
+        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
+        TriggerDispatcher.prepare = new TriggerDispatcher(
+            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
+        );
 
         Test.startTest();
-        Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object>{
-            TriggerBindOption.ERROR_HANDLER => new AccountTriggerTestErrorHandler()
-        };
-        TriggerDispatcher.dispatcher
+        TriggerDispatcher.prepare
             .bindAsync(
                 TriggerOperation.BEFORE_INSERT,
-                AsyncHandlerType.FUTURE,
                 new AccountTriggerTestHandler(true),
-                options
+                new Map<TriggerBindOption, Object>{ TriggerBindOption.ErrorHandler => new AccountTriggerTestHandler() }
             )
-            .setDefaultErrorHandler(new AccountTriggerTestErrorHandler())
             .run();
         Test.stopTest();
 
         List<Account> newAccounts = [SELECT Name, Description FROM Account];
         System.assertEquals(1, newAccounts.size());
-
-        Account newAccount = newAccounts.get(0);
-        System.assertEquals('Error handling test', newAccount.Name);
-        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccount.Description);
+        System.assertEquals('Error', newAccounts.get(0).Name);
+        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccounts.get(0).Description);
     }
 
     @IsTest
-    public static void positiveOnlyHandlerScheduleRun() {
-        TriggerContext.runningTests = true;
-
-        Integer countJobsBefore = [SELECT COUNT() FROM CronTrigger];
-        Test.startTest();
-        Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object>{ TriggerBindOption.DELAY => 1 };
-        TriggerDispatcher.dispatcher
-            .bindAsync(
-                TriggerOperation.BEFORE_INSERT,
-                AsyncHandlerType.SCHEDULABLE,
-                new AccountTriggerTestHandler(),
-                options
-            )
-            .run();
-
-        // Needed to test how the scheduled batch will run
-        ScheduleTriggerHandlerContainer schedulableContainer = new ScheduleTriggerHandlerContainer(
-            new TriggerContext(),
-            new AccountTriggerTestHandler(),
-            options
+    private static void beforeInsertWithoutErrorHandlerFutureNegativeTest() {
+        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
+        TriggerDispatcher.prepare = new TriggerDispatcher(
+            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
         );
-        schedulableContainer.execute(null, null);
 
-        Test.stopTest();
-
-        Integer countJobsAfter = [SELECT COUNT() FROM CronTrigger];
-        System.assertEquals(1, countJobsAfter - countJobsBefore);
+        Exception error;
+        try {
+            Test.startTest();
+            TriggerDispatcher.prepare.bindAsync(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler(true))
+                .run();
+            Test.stopTest();
+        } catch (Exception ex) {
+            error = ex;
+        }
 
         List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(1, newAccounts.size());
-
-        Account newAccount = newAccounts.get(0);
-        System.assertEquals('test', newAccount.Name);
-        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccount.Description);
+        System.assert(newAccounts.isEmpty());
+        System.assert(error != null);
+        System.assert(error instanceof CalloutException);
     }
 
     @IsTest
-    public static void positiveHandlerScheduleRun() {
-        TriggerContext.runningTests = true;
-
-        Integer countJobsBefore = [SELECT COUNT() FROM CronTrigger];
-        Test.startTest();
-        Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object>{ TriggerBindOption.DELAY => 1 };
-        TriggerDispatcher.dispatcher
-            .bindAsync(
-                TriggerOperation.BEFORE_INSERT,
-                AsyncHandlerType.SCHEDULABLE,
-                new AccountTriggerTestHandler(),
-                options
-            )
-            .run();
-
-        // Needed to test how the scheduled batch will run
-        ScheduleTriggerHandlerContainer schedulableContainer = new ScheduleTriggerHandlerContainer(
-            new TriggerContext(),
-            new AccountTriggerTestHandler(),
-            options
+    private static void beforeInsertScheduleTest() {
+        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
+        TriggerDispatcher.prepare = new TriggerDispatcher(
+            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
         );
-        schedulableContainer.execute(null, null);
-
-        Test.stopTest();
-
-        Integer countJobsAfter = [SELECT COUNT() FROM CronTrigger];
-        System.assertEquals(1, countJobsAfter - countJobsBefore);
-
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(1, newAccounts.size());
-
-        Account newAccount = newAccounts.get(0);
-        System.assertEquals('test', newAccount.Name);
-        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccount.Description);
-    }
-
-    @IsTest
-    public static void positiveHandlerAndErrorHandlerScheduleRun() {
-        TriggerContext.runningTests = true;
-
-        Integer countJobsBefore = [SELECT COUNT() FROM CronTrigger];
-        Test.startTest();
         Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object>{
-            TriggerBindOption.ERROR_HANDLER => new AccountTriggerTestErrorHandler(),
-            TriggerBindOption.DELAY => 1
+            TriggerBindOption.Delay => 1,
+            TriggerBindOption.JobPrefix => 'test-'
         };
-        TriggerDispatcher.dispatcher
-            .bindAsync(
+
+        Test.startTest();
+        TriggerDispatcher.prepare.bindAsync(
                 TriggerOperation.BEFORE_INSERT,
-                AsyncHandlerType.SCHEDULABLE,
-                new AccountTriggerTestHandler(true),
+                new AccountTriggerTestHandler(AsyncHandlerType.Schedule),
                 options
             )
-            .setDefaultErrorHandler(new AccountTriggerTestErrorHandler())
             .run();
-
-        // Needed to test how the scheduled batch will run
-        ScheduleTriggerHandlerContainer schedulableContainer = new ScheduleTriggerHandlerContainer(
-            new TriggerContext(),
-            new AccountTriggerTestHandler(true),
-            options
-        );
-        schedulableContainer.execute(null, null);
-
         Test.stopTest();
 
-        Integer countJobsAfter = [SELECT COUNT() FROM CronTrigger];
-        System.assertEquals(1, countJobsAfter - countJobsBefore);
-
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(1, newAccounts.size());
-
-        Account newAccount = newAccounts.get(0);
-        System.assertEquals('Error handling test', newAccount.Name);
-        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccount.Description);
+        List<CronTrigger> lastSubmittedJob = [
+            SELECT CronJobDetail.Name
+            FROM CronTrigger
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+        System.assertEquals(1, lastSubmittedJob.size());
+        System.assert(lastSubmittedJob.get(0).CronJobDetail.Name.startsWith('test-AccountTriggerTestHandler'));
     }
 
-    private class AccountTriggerTestHandler implements ITriggerHandler {
-        private Boolean throwException = false;
+    @IsTest
+    private static void beforeInsertWithDefaultErrorHandlerScheduleTest() {
+        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
+        TriggerDispatcher.prepare = new TriggerDispatcher(
+            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
+        );
+
+        Test.startTest();
+        TriggerDispatcher.prepare
+            .bindAsync(
+                TriggerOperation.BEFORE_INSERT,
+                new AccountTriggerTestHandler(AsyncHandlerType.Schedule, true),
+                new Map<TriggerBindOption, Object>{ TriggerBindOption.Delay => 1 }
+            )
+            .run(new AccountTriggerTestHandler());
+        Test.stopTest();
+
+        List<CronTrigger> lastSubmittedJob = [
+            SELECT CronJobDetail.Name
+            FROM CronTrigger
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+        System.assertEquals(1, lastSubmittedJob.size());
+        System.assert(
+            lastSubmittedJob.get(0).CronJobDetail.Name.startsWith('ScheduleHandlerJob-AccountTriggerTestHandler')
+        );
+    }
+
+    @IsTest
+    private static void syncHandlerInAsyncContainerNegativeTest() {
+        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
+        TriggerContext context = new TriggerContext(
+            new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList)
+        );
+        TriggerHandlerWrapper handlerWrapper = new TriggerHandlerWrapper(
+            TriggerOperation.BEFORE_INSERT,
+            new AccountTriggerTestHandler(),
+            new Map<TriggerBindOption, Object>()
+        );
+
+        Exception error;
+        try {
+            AsyncTriggerHandlerContainer.handle(context, handlerWrapper);
+        } catch (Exception ex) {
+            error = ex;
+        }
+
+        System.debug(error.getMessage());
+        System.debug(error.getStackTraceString());
+        System.assert(error != null);
+        System.assert(error instanceof TriggerDispatcher.TriggerDispatcherException);
+    }
+
+    private class AccountTriggerTestHandler implements ITriggerHandler, ITriggerErrorHandler {
+        private final Boolean throwException;
+        private final AsyncHandlerType asyncType;
 
         public AccountTriggerTestHandler() {
+            this(AsyncHandlerType.Future, false);
+        }
+
+        public AccountTriggerTestHandler(AsyncHandlerType asyncType) {
+            this(asyncType, false);
         }
 
         public AccountTriggerTestHandler(Boolean throwException) {
+            this(AsyncHandlerType.Future, throwException);
+        }
+
+        public AccountTriggerTestHandler(AsyncHandlerType asyncType, Boolean throwException) {
+            this.asyncType = asyncType;
             this.throwException = throwException;
         }
 
         public void handle(TriggerContext context) {
-            TriggerOperation triggerEvent = context.triggerEvent;
-            TriggerType triggerType = context.predOrPost;
-            AsyncHandlerType asyncHandlerType = context.asyncRunType;
-            Boolean isAsync = context.isAsyncRun;
-            List<SObject> newList = context.newList;
-            List<SObject> oldList = context.oldList;
-            Map<Id, SObject> newMap = context.newMap;
-            Map<Id, SObject> oldMap = context.oldMap;
-
-            context.properties.put('event', triggerEvent);
-            context.properties.put('type', triggerType);
-            context.properties.put('async type', asyncHandlerType);
-            context.properties.put('is async', isAsync);
-
-            Account testAccount = new Account(Name = 'test', Description = triggerEvent.name());
-
             if (throwException) {
-                throw new CalloutException('Error handling test');
+                throw new CalloutException('Error');
             }
-            System.debug('Before inserting account');
-            insert testAccount;
-        }
-    }
 
-    private class AccountTriggerTestErrorHandler implements ITriggerErrorHandler {
+            System.assert(context.props.isAsync);
+            System.assert(context.props.asyncType == asyncType);
+
+            insert context.props.newList.deepClone();
+        }
+
         public void handle(TriggerContext context, Exception error) {
-            TriggerContext.skipAllHandlers();
-            insert new Account(Name = error.getMessage(), Description = context.properties.get('event').toString());
+            insert new Account(Name = error.getMessage(), Description = context.props.operation.name());
         }
     }
 }

@@ -1,7 +1,7 @@
 public class TriggerHandlerWrapper implements ITriggerHandler, ITriggerErrorHandler {
     private final static String DEFAULT_JOB_PREFIX = 'ScheduleHandlerJob-';
 
-    public Boolean isExecuted;
+    public Boolean isExecuted { get; private set; }
     public final TriggerOperation operation;
     public final ITriggerHandler handler;
     private final Map<TriggerBindOption, Object> options;
@@ -20,7 +20,7 @@ public class TriggerHandlerWrapper implements ITriggerHandler, ITriggerErrorHand
     }
     public Boolean isAsync {
         get {
-            return (Boolean) options.get(TriggerBindOption.Async);
+            return options.get(TriggerBindOption.Async) == true;
         }
     }
     public AsyncHandlerType asyncType {
@@ -38,9 +38,6 @@ public class TriggerHandlerWrapper implements ITriggerHandler, ITriggerErrorHand
     }
     public String jobName {
         get {
-            if (asyncType != AsyncHandlerType.Schedule) {
-                return null;
-            }
             String prefix = options.containsKey(TriggerBindOption.JobPrefix)
                 ? (String) options.get(TriggerBindOption.JobPrefix)
                 : DEFAULT_JOB_PREFIX;

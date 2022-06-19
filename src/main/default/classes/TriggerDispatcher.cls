@@ -1,9 +1,4 @@
 global class TriggerDispatcher {
-    private static final Map<AsyncHandlerType, Type> asyncContainerTypess = new Map<AsyncHandlerType, Type>{
-        AsyncHandlerType.Future => FutureTriggerHandlerContainer.class,
-        AsyncHandlerType.Schedule => ScheduleTriggerHandlerContainer.class
-    };
-
     private final TriggerContext context;
     private final List<TriggerHandlerWrapper> handlers = new List<TriggerHandlerWrapper>();
 
@@ -29,7 +24,7 @@ global class TriggerDispatcher {
 
     global void run(ITriggerErrorHandler defaultErrorHandler) {
         if (!Trigger.isExecuting && !Test.isRunningTest()) {
-            throw new TriggerDispatcherException('TriggerDispatcher cannot be ran from the non-trigger context');
+            throw new TriggerDispatcherException('TriggerDispatcher cannot be run from the non-trigger context');
         }
         runHandlers(defaultErrorHandler);
         handlers.clear();
@@ -84,7 +79,7 @@ global class TriggerDispatcher {
                         continue;
                     }
                     if (handlerWrapper.isAsync) {
-                        getAsyncHandlerContainer(handlerWrapper.asyncType).execute(context, handlerWrapper);
+                        AsyncTriggerHandlerContainer.handle(context, handlerWrapper);
                     } else {
                         handlerWrapper.handle(context);
                     }
@@ -95,10 +90,6 @@ global class TriggerDispatcher {
                 }
             }
         }
-    }
-
-    private IAsyncHandlerContainer getAsyncHandlerContainer(AsyncHandlerType asyncType) {
-        return (IAsyncHandlerContainer) asyncContainerTypess.get(asyncType).newInstance();
     }
 
     global class TriggerDispatcherException extends Exception {

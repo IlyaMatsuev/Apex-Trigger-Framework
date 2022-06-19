@@ -1,5 +1,5 @@
 global class TriggerContext {
-    private static Boolean skipAllHandlers = false;
+    private static Boolean skipAllHandlers;
     global final Props props;
     global final Skips skips;
     global final Map<String, Object> stash = new Map<String, Object>();
@@ -74,7 +74,7 @@ global class TriggerContext {
             this.oldList = oldList;
             this.newList = newList;
             this.oldMap = oldList != null ? new Map<Id, SObject>(oldList) : null;
-            this.newMap = newList != null ? new Map<Id, SObject>(newList) : null;
+            this.newMap = (newList != null && (!isInsert || isAfter)) ? new Map<Id, SObject>(newList) : null;
             this.size = newList != null ? newList.size() : (oldList != null ? oldList.size() : 0);
             this.isExecuting = true;
         }
@@ -85,7 +85,7 @@ global class TriggerContext {
 
         global Boolean skipAll {
             get {
-                return skipAllHandlers;
+                return skipAllHandlers == null ? false : skipAllHandlers;
             }
         }
 
@@ -93,19 +93,23 @@ global class TriggerContext {
         }
 
         global void all() {
-            all(false);
+            all(true);
         }
 
         global void all(Boolean skipAll) {
             skipAllHandlers = skipAll;
         }
 
-        global void add(String handlerName) {
-            skippedHandlers.add(handlerName);
+        global void byName(String handlerName) {
+            byName(handlerName, true);
         }
 
-        global void remove(String handlerName) {
-            skippedHandlers.remove(handlerName);
+        global void byName(String handlerName, Boolean skip) {
+            if (skip) {
+                skippedHandlers.add(handlerName);
+            } else {
+                skippedHandlers.remove(handlerName);
+            }
         }
 
         global Boolean has(String handlerName) {
