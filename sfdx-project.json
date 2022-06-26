@@ -11,5 +11,8 @@
     "name": "apex-trigger-framework",
     "namespace": "",
     "sfdcLoginUrl": "https://login.salesforce.com",
-    "sourceApiVersion": "52.0"
+    "sourceApiVersion": "52.0",
+    "packageAliases": {
+        "apex-trigger-framework": "0Ho5Y000000wkRISAY"
+    }
 }

@@ -2,49 +2,53 @@
 
 TODO: Badges
 
-## Features
+Simple Apex Trigger Framework wrapped as an unlocked package. Contains the following features:
 
--   Delegating trigger handlers for different Apex jobs in scope of a DML transaction - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#usage)
--   Exchanging parameters between all handlers (from one to other and in reverse) - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#properties)
--   Opportunity to skip particular handlers (or all of them) - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#skipallhandlers)
--   Setting trigger error handler instance for a particular handler or for all of them - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#TriggerDispatcher)
--   Binding asynchronous trigger handlers - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#bindAsync)
--   Scheduling handlers to run in a particular time (for instance, in 3 minutes) - [Show](https://github.com/IlyaMatsuev/Apex-Trigger-Helper-Library#bindAsync)
+-   Delegating trigger handlers
+-   Exchanging parameters between all handlers
+-   Skiping mechanism
+-   Configuring trigger error handlers
+-   Binding asynchronous trigger handlers
+-   Schedule trigger handlers
 
 ## Overview
 
-TODO: overview
+To create a trigger handler you first need to implement the `ITriggerHandler` interface:
+
+```java
+public class TestTriggerHandler implements ITriggerHandler {
+    public void handle(TriggerContext context) {
+        // Sample logic
+        Integer count = context.stash.containsKey('count') ? (Integer) context.stash.get('count') : 0;
+        context.stash.put('count', ++count);
+        System.debug('count: ' + count);
+    }
+}
+```
+
+The example of using the framework:
+
+```java
+trigger Account on Account (before insert, before update, before delete, after insert, after update, after delete) {
+	TriggerDispatcher.prepare
+        .bind(TriggerOperation.AFTER_INSERT, new TestTriggerHandler())
+        .bind(TriggerOperation.AFTER_UPDATE, new TestTriggerHandler())
+        .bindAsync(TriggerOperation.AFTER_DELETE, new TestAsyncTriggerHandler())
+        .run();
+}
+```
+
+First, setup all your handlers by calling `bind()` or `bindAsync()` methods from the `TriggerDispatcher.prepare` instance. After all handlers set you call the `run()` method.
 
 ## Installation
 
-### From Unmanaged Package
-
-You can just install the package by the link on a [sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=<package-id>) or [dev org](https://login.salesforce.com/packaging/installPackage.apexp?p0=<package-id>).
+You can just install the package by the link on a [sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=0Ho5Y000000wkRISAY) or [dev org](https://login.salesforce.com/packaging/installPackage.apexp?p0=0Ho5Y000000wkRISAY).
 
 If you prefer using salesforce CLI you can run:
 
 ```
-sfdx force:package:install -p <package-id> -w 10 -b 10 -u <username>
+sfdx force:package:install -p 0Ho5Y000000wkRISAY -w 10 -b 10 -u <username>
 ```
-
-### From Source
-
-You can also install the package with the automated scripts: [`pkg-deploy.sh`](scripts/pkg-deploy.sh) and [`pkg-from-scratch.sh`](scripts/pkg-from-scratch.sh).  
-First is for deploying changes to the existing org.
-
-```
-./scripts/pkg-deploy.sh <username-or-alias>
-```
-
-Second is for creating a new configured scratch org.
-
-```
-./scripts/pkg-from-scratch.sh <devhub-username-or-alias> <new-scratch-org-alias>
-```
-
-## Configuration
-
-Custom settings, custom metadata or any other configuration example.
 
 ## Documentation
 
