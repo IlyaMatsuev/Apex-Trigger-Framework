@@ -2,27 +2,21 @@
 private class AsyncTriggerRunTest {
     @IsTest
     private static void beforeInsertFutureTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Test.startTest();
         TriggerDispatcher.prepare.bindAsync(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler()).run();
         Test.stopTest();
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(1, newAccounts.size());
-        System.assertEquals('Test', newAccounts.get(0).Name);
-        System.assertEquals('Test description', newAccounts.get(0).Description);
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(null, (Integer) context.stash.get('count'));
     }
 
     @IsTest
     private static void beforeInsertWithDefaultErrorHandlerFutureTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Test.startTest();
         TriggerDispatcher.prepare
@@ -30,18 +24,15 @@ private class AsyncTriggerRunTest {
             .run(new AccountTriggerTestHandler());
         Test.stopTest();
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(1, newAccounts.size());
-        System.assertEquals('Error', newAccounts.get(0).Name);
-        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccounts.get(0).Description);
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(null, (Integer) context.stash.get('count'));
+        System.assertEquals(null, (String) context.stash.get('error'));
     }
 
     @IsTest
     private static void beforeInsertWithErrorHandlerFutureTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Test.startTest();
         TriggerDispatcher.prepare
@@ -53,18 +44,15 @@ private class AsyncTriggerRunTest {
             .run();
         Test.stopTest();
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(1, newAccounts.size());
-        System.assertEquals('Error', newAccounts.get(0).Name);
-        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccounts.get(0).Description);
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(null, (Integer) context.stash.get('count'));
+        System.assertEquals(null, (String) context.stash.get('error'));
     }
 
     @IsTest
     private static void beforeInsertWithoutErrorHandlerFutureNegativeTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Exception error;
         try {
@@ -76,18 +64,15 @@ private class AsyncTriggerRunTest {
             error = ex;
         }
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assert(newAccounts.isEmpty());
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(null, (Integer) context.stash.get('count'));
         System.assert(error != null);
         System.assert(error instanceof CalloutException);
     }
 
     @IsTest
     private static void beforeInsertScheduleTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        TriggerDispatcher.prepare = new TriggerDispatcher(new FakeTriggerContextFactory());
         Map<TriggerBindOption, Object> options = new Map<TriggerBindOption, Object>{
             TriggerBindOption.Delay => 1,
             TriggerBindOption.JobPrefix => 'test-'
@@ -114,10 +99,7 @@ private class AsyncTriggerRunTest {
 
     @IsTest
     private static void beforeInsertWithDefaultErrorHandlerScheduleTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        TriggerDispatcher.prepare = new TriggerDispatcher(new FakeTriggerContextFactory());
 
         Test.startTest();
         TriggerDispatcher.prepare
@@ -143,10 +125,8 @@ private class AsyncTriggerRunTest {
 
     @IsTest
     private static void syncHandlerInAsyncContainerNegativeTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerContext context = new TriggerContext(
-            new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList)
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
         TriggerHandlerWrapper handlerWrapper = new TriggerHandlerWrapper(
             TriggerOperation.BEFORE_INSERT,
             new AccountTriggerTestHandler(),
@@ -155,13 +135,13 @@ private class AsyncTriggerRunTest {
 
         Exception error;
         try {
-            AsyncTriggerHandlerContainer.handle(context, handlerWrapper);
+            AsyncTriggerHandlerContainer.handle(new FakeTriggerContextFactory().create(), handlerWrapper);
         } catch (Exception ex) {
             error = ex;
         }
 
-        System.debug(error.getMessage());
-        System.debug(error.getStackTraceString());
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(null, (Integer) context.stash.get('count'));
         System.assert(error != null);
         System.assert(error instanceof TriggerDispatcher.TriggerDispatcherException);
     }
@@ -200,6 +180,19 @@ private class AsyncTriggerRunTest {
 
         public void handle(TriggerContext context, Exception error) {
             insert new Account(Name = error.getMessage(), Description = context.props.operation.name());
+        }
+    }
+
+    private class FakeTriggerContextFactory extends TriggerContextFactory {
+        private final TriggerContext context;
+
+        public FakeTriggerContextFactory() {
+            List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
+            context = new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList));
+        }
+
+        public override TriggerContext create() {
+            return context;
         }
     }
 }

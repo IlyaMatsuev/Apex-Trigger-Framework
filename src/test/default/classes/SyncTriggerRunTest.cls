@@ -2,27 +2,21 @@
 private class SyncTriggerRunTest {
     @IsTest
     private static void beforeInsertTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Test.startTest();
         TriggerDispatcher.prepare.bind(TriggerOperation.BEFORE_INSERT, new AccountTriggerTestHandler()).run();
         Test.stopTest();
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(1, newAccounts.size());
-        System.assertEquals('Test', newAccounts.get(0).Name);
-        System.assertEquals('Test description', newAccounts.get(0).Description);
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(1, (Integer) context.stash.get('count'));
     }
 
     @IsTest
     private static void beforeInsertWithDefaultErrorHandlerTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Test.startTest();
         TriggerDispatcher.prepare
@@ -30,18 +24,15 @@ private class SyncTriggerRunTest {
             .run(new AccountTriggerTestHandler());
         Test.stopTest();
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(1, newAccounts.size());
-        System.assertEquals('Error', newAccounts.get(0).Name);
-        System.assertEquals(TriggerOperation.BEFORE_INSERT.name(), newAccounts.get(0).Description);
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(null, (Integer) context.stash.get('count'));
+        System.assertEquals('Error', (String) context.stash.get('error'));
     }
 
     @IsTest
     private static void beforeInsertWithoutErrorHandlerNegativeTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Exception error;
         try {
@@ -52,18 +43,16 @@ private class SyncTriggerRunTest {
             error = ex;
         }
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assert(newAccounts.isEmpty());
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(null, (Integer) context.stash.get('count'));
         System.assert(error != null);
         System.assert(error instanceof CalloutException);
     }
 
     @IsTest
     private static void skipAllHandlersTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Test.startTest();
         TriggerDispatcher.prepare
@@ -74,16 +63,14 @@ private class SyncTriggerRunTest {
             .run();
         Test.stopTest();
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(1, newAccounts.size());
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(1, (Integer) context.stash.get('count'));
     }
 
     @IsTest
     private static void skipHandlerByNameTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Test.startTest();
         TriggerDispatcher.prepare
@@ -110,16 +97,14 @@ private class SyncTriggerRunTest {
             .run();
         Test.stopTest();
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(2, newAccounts.size());
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(2, (Integer) context.stash.get('count'));
     }
 
     @IsTest
     private static void skipAndResumeHandlerByNameTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Test.startTest();
         TriggerDispatcher.prepare
@@ -146,16 +131,14 @@ private class SyncTriggerRunTest {
             .run();
         Test.stopTest();
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(2, newAccounts.size());
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(2, (Integer) context.stash.get('count'));
     }
 
     @IsTest
     private static void skipAndResumeAllHandlersTest() {
-        List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
-        TriggerDispatcher.prepare = new TriggerDispatcher(
-            new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList))
-        );
+        FakeTriggerContextFactory contextFactory = new FakeTriggerContextFactory();
+        TriggerDispatcher.prepare = new TriggerDispatcher(contextFactory);
 
         Test.startTest();
         TriggerDispatcher.prepare
@@ -182,8 +165,14 @@ private class SyncTriggerRunTest {
             .run();
         Test.stopTest();
 
-        List<Account> newAccounts = [SELECT Name, Description FROM Account];
-        System.assertEquals(2, newAccounts.size());
+        TriggerContext context = contextFactory.create();
+        System.assertEquals(2, (Integer) context.stash.get('count'));
+    }
+
+    @IsTest
+    static void triggerContextFactoryTest() {
+        // The purpose of this test is to cover the TriggerContextFactory class
+        new TriggerContextFactory().create();
     }
 
     private class AccountTriggerTestHandler implements ITriggerHandler, ITriggerErrorHandler {
@@ -204,11 +193,12 @@ private class SyncTriggerRunTest {
 
             System.assert(!context.props.isAsync);
 
-            insert context.props.newList.deepClone();
+            Integer count = context.stash.containsKey('count') ? (Integer) context.stash.get('count') : 0;
+            context.stash.put('count', ++count);
         }
 
         public void handle(TriggerContext context, Exception error) {
-            insert new Account(Name = error.getMessage(), Description = context.props.operation.name());
+            context.stash.put('error', error.getMessage());
         }
     }
 
@@ -249,6 +239,19 @@ private class SyncTriggerRunTest {
             } else {
                 context.skips.byName(handlerName, false);
             }
+        }
+    }
+
+    private class FakeTriggerContextFactory extends TriggerContextFactory {
+        private final TriggerContext context;
+
+        public FakeTriggerContextFactory() {
+            List<Account> newList = new List<Account>{ new Account(Name = 'Test', Description = 'Test description') };
+            context = new TriggerContext(new TriggerContext.Props(TriggerOperation.BEFORE_INSERT, null, newList));
+        }
+
+        public override TriggerContext create() {
+            return context;
         }
     }
 }

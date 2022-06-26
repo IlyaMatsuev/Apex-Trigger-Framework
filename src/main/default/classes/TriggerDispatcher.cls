@@ -1,12 +1,12 @@
 global class TriggerDispatcher {
-    private final TriggerContext context;
+    private final TriggerContextFactory contextFactory;
     private final List<TriggerHandlerWrapper> handlers = new List<TriggerHandlerWrapper>();
 
     @TestVisible
     global static TriggerDispatcher prepare {
         get {
             if (prepare == null) {
-                prepare = new TriggerDispatcher(new TriggerContext());
+                prepare = new TriggerDispatcher(new TriggerContextFactory());
             }
             return prepare;
         }
@@ -14,8 +14,8 @@ global class TriggerDispatcher {
     }
 
     @TestVisible
-    private TriggerDispatcher(TriggerContext context) {
-        this.context = context;
+    private TriggerDispatcher(TriggerContextFactory contextFactory) {
+        this.contextFactory = contextFactory;
     }
 
     global void run() {
@@ -26,8 +26,9 @@ global class TriggerDispatcher {
         if (!Trigger.isExecuting && !Test.isRunningTest()) {
             throw new TriggerDispatcherException('TriggerDispatcher cannot be run from the non-trigger context');
         }
-        runHandlers(defaultErrorHandler);
-        handlers.clear();
+        List<TriggerHandlerWrapper> handlers = this.handlers.clone();
+        this.handlers.clear();
+        runHandlers(defaultErrorHandler, handlers);
     }
 
     global TriggerDispatcher bind(TriggerOperation operation, ITriggerHandler handler) {
@@ -65,7 +66,8 @@ global class TriggerDispatcher {
         return this;
     }
 
-    private void runHandlers(ITriggerErrorHandler defaultErrorHandler) {
+    private void runHandlers(ITriggerErrorHandler defaultErrorHandler, List<TriggerHandlerWrapper> handlers) {
+        TriggerContext context = contextFactory.create();
         for (TriggerHandlerWrapper handlerWrapper : handlers) {
             if (context.skips.skipAll) {
                 break;
