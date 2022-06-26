@@ -27,8 +27,8 @@ global class TriggerContext {
         global final Map<Id, SObject> newMap;
         global final TriggerOperation operation;
         global final Integer size;
+        global final Boolean isExecuting;
 
-        global Boolean isExecuting { get; private set; }
         global Boolean isAsync {
             get {
                 return asyncType != null;
@@ -58,7 +58,7 @@ global class TriggerContext {
             newMap = Trigger.newMap;
             operation = Trigger.operationType;
             size = Trigger.size;
-            isExecuting = true;
+            isExecuting = Trigger.isExecuting;
         }
 
         @TestVisible

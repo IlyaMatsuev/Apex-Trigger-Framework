@@ -1,6 +1,6 @@
 # Apex Trigger Framework
 
-TODO: Badges
+[![Scratch org CI](https://github.com/IlyaMatsuev/Apex-Trigger-Framework/actions/workflows/scratch-org-ci.yml/badge.svg?branch=main)](https://github.com/IlyaMatsuev/Apex-Trigger-Framework/actions/workflows/scratch-org-ci.yml)
 
 Simple Apex Trigger Framework wrapped as an unlocked package. Contains the following features:
 
@@ -42,12 +42,12 @@ First, setup all your handlers by calling `bind()` or `bindAsync()` methods from
 
 ## Installation
 
-You can just install the package by the link on a [sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=0Ho5Y000000wkRISAY) or [dev org](https://login.salesforce.com/packaging/installPackage.apexp?p0=0Ho5Y000000wkRISAY).
+You can just install the package by the link on a [sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t5Y000001wN95QAE) or [dev org](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5Y000001wN95QAE).
 
 If you prefer using salesforce CLI you can run:
 
 ```
-sfdx force:package:install -p 0Ho5Y000000wkRISAY -w 10 -b 10 -u <username>
+sfdx force:package:install -p 04t5Y000001wN95QAE -w 10 -b 10 -u <username>
 ```
 
 ## Documentation
