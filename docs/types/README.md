@@ -2,51 +2,48 @@
 
 Here are only specified global Apex types that are supposed to be used by a user as part of this package.
 
+**All types below are made as nested classes of the `Triggers` class.**
+
 ### Classes
 
--   [TriggerDispatcher](#triggerdispatcher)
--   [TriggerContext](#triggercontext)
-    -   [TriggerContext.Props](#triggercontextprops)
-    -   [TriggerContext.Skips](#triggercontextskips)
+-   [Dispatcher](#dispatcher)
+-   [Context](#context)
+    -   [Props](#props)
+    -   [Skips](#skips)
 
 ### Interfaces
 
--   [ITriggerHandler](#itriggerhandler)
--   [ITriggerErrorHandler](#itriggererrorhandler)
+-   [IHandler](#ihandler)
+-   [IErrorHandler](#ierrorhandler)
 
 ### Enums
 
+-   [BindOption](#bindoption)
 -   [TriggerOperation](#triggeroperation)
--   [TriggerBindOption](#triggerbindoption)
--   [AsyncHandlerType](#asynchandlertype)
 
 ---
 
-### TriggerDispatcher
+### Dispatcher
 
-Dispatcher class for binding handlers for the trigger. Instance of the class can only be created via the `prepare` property.
-
-#### Properties
-
-`TriggerDispatcher prepare { get; }` - Returns the dispatcher instance.
+Dispatcher class for binding handlers for the trigger. Instance of the class can only be created via the `Triggers.dispatcher` property.
 
 #### Methods
 
-`TriggerDispatcher bind(TriggerOperation operation, ITriggerHandler handler)` - Configure a handler to run for a particular trigger event.
+`Dispatcher bind(TriggerOperation operation, IHandler handler)` - Configure a handler to run for a particular trigger event.
 
-`TriggerDispatcher bind(TriggerOperation operation, ITriggerHandler handler, Map<TriggerBindOption, Object> options)` - Configure a handler to run for a particular trigger event with the provided options.
+`Dispatcher bind(TriggerOperation operation, IHandler handler, Map<BindOption, Object> options)` - Configure a handler to run for a particular trigger event with the provided options.
 
-`TriggerDispatcher bindAsync(TriggerOperation operation, ITriggerHandler handler)` - Configure an async handler to run for a particular trigger event.
+`Dispatcher bindAsync(TriggerOperation operation, IHandler handler)` - Configure an async handler to run for a particular trigger event.
 
-`TriggerDispatcher bindAsync(TriggerOperation operation, ITriggerHandler handler, Map<TriggerBindOption, Object> options)` - Configure an async handler to run for a particular trigger event with the provided options.
+`Dispatcher bindAsync(TriggerOperation operation, IHandler handler, Map<BindOption, Object> options)` - Configure an async handler to run for a particular trigger event with the provided options.
 
 `void run()` - This method is called at the end of the binding chain. Runs the appropriate trigger handlers.
 
-`void run(ITriggerErrorHandler defaultErrorHandler)` - This method is called at the end of the binding chain. Runs the appropriate trigger handlers with the provided default error handler in case of an unhandled exception.
+`void run(IErrorHandler defaultErrorHandler)` - This method is called at the end of the binding chain. Runs the appropriate trigger handlers with the provided default error handler in case of an unhandled exception.
 
 ---
 
-### TriggerContext
+### Context
 
 Class containing details about the trigger variables, skipping and stash functionality.
 
@@ -60,7 +57,7 @@ Class containing details about the trigger variables, skipping and stash functio
 
 ---
 
-### TriggerContext.Props
+### Props
 
 Contains details about the trigger variables.
 
@@ -86,17 +83,13 @@ Contains details about the trigger variables.
 
 `Integer size` - Size of the records processed in the current trigger execution context.
 
-`Boolean` - True if executing inside the trigger context.
-
-#### Properties
+`Boolean isExecuting` - True if executing inside the trigger context.
 
 `Boolean isAsync` - True if the current trigger handler is running inside the async context.
 
-`AsyncHandlerType asyncType` - Async type of the trigger handler execution. Null for the sync context.
-
 ---
 
-### TriggerContext.Skips
+### Context.Skips
 
 Provides trigger handlers skipping functionality.
 
@@ -120,19 +113,29 @@ Provides trigger handlers skipping functionality.
 
 ---
 
-### ITriggerHandler
+### IHandler
 
 Trigger handler implementation.
 
-`void handle(TriggerContext context)` - Method that will be called from the trigger, passing the context.
+`void handle(Context context)` - Method that will be called from the trigger, passing the context.
 
 ---
 
-### ITriggerErrorHandler
+### IErrorHandler
 
 Trigger error handler implementation. Called whenever an unexpected error occurs.
 
-`void handle(TriggerContext context, Exception error)` - Method that will be called from the trigger if an unexpected exception happens, passing the context and the exception instance.
+`void handle(Context context, Exception error)` - Method that will be called from the trigger if an unexpected exception happens, passing the context and the exception instance.
+
+---
+
+### BindOption
+
+Binding option for the trigger handler configuration.
+
+`Name` - Explicit name of the trigger handler. By default it's the handler's class name.
+
+`ErrorHandler` - Trigger error handler instance. Should implement the `IErrorHandler` interface.
 
 ---
 
@@ -155,29 +158,5 @@ The standard Apex enum defining the trigger event types.
 `BEFORE_UNDELETE`
 
 `AFTER_UNDELETE`
-
----
-
-### TriggerBindOption
-
-Binding option for the trigger handler configuration.
-
-`HandlerName` - Explicit name of the trigger handler. By default it's the handler's class name.
-
-`ErrorHandler` - Trigger error handler instance. Should implement the `ITriggerErrorHandler` interface.
-
-`Delay` - The amount of minutes for the timeout. Applicable only for the async scheduled handlers.
-
-`JobPrefix` - The prefix for a scheduled job. Applicable only for the async scheduled handlers.
-
----
-
-### AsyncHandlerType
-
-Trigger handler async type.
-
-`Future` - Executes the handler right after the trigger event is executed. Uses Queuable Apex.
-
-`Schedule` - Executes the handler after a certain timeout, specified in the binding options. Uses Batch Apex.
 
 ---

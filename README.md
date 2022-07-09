@@ -8,16 +8,15 @@ Simple Apex Trigger Framework wrapped as an unlocked package. Contains the follo
 -   Exchanging parameters between all handlers
 -   Skiping mechanism
 -   Configuring trigger error handlers
--   Binding asynchronous trigger handlers
--   Schedule trigger handlers
+-   Binding asynchronous trigger handlers (Queueable)
 
 ## Overview
 
-To create a trigger handler you first need to implement the `ITriggerHandler` interface:
+To create a trigger handler you first need to implement the `Triggers.IHandler` interface:
 
 ```java
-public class TestTriggerHandler implements ITriggerHandler {
-    public void handle(TriggerContext context) {
+public class TestTriggerHandler implements Triggers.IHandler {
+    public void handle(Triggers.Context context) {
         // Sample logic
         Integer count = context.stash.containsKey('count') ? (Integer) context.stash.get('count') : 0;
         context.stash.put('count', ++count);
@@ -30,7 +29,7 @@ The example of using the framework:
 
 ```java
 trigger Account on Account (before insert, before update, before delete, after insert, after update, after delete) {
-	TriggerDispatcher.prepare
+	Triggers.dispatcher
         .bind(TriggerOperation.AFTER_INSERT, new TestTriggerHandler())
         .bind(TriggerOperation.AFTER_UPDATE, new TestTriggerHandler())
         .bindAsync(TriggerOperation.AFTER_DELETE, new TestAsyncTriggerHandler())
@@ -38,7 +37,7 @@ trigger Account on Account (before insert, before update, before delete, after i
 }
 ```
 
-First, setup all your handlers by calling `bind()` or `bindAsync()` methods from the `TriggerDispatcher.prepare` instance. After all handlers set you call the `run()` method.
+First, setup all your handlers by calling `bind()` or `bindAsync()` methods from the `Triggers.dispatcher` instance. After all handlers set you call the `run()` method.
 
 ## Installation
 
