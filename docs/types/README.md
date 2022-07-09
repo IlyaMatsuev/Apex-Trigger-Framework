@@ -53,7 +53,7 @@ Class containing details about the trigger variables, skipping and stash functio
 
 `Skips skips` - Instance of the `Skips` class. Provides trigger handlers skipping functionality.
 
-`Map<String, Object> stash` - Stash that is shared across all handlers in scope of the trigger.
+`Map<String, Object> stash` - Stash that is shared across all handlers in scope of the **current** trigger execution.
 
 ---
 

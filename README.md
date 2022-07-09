@@ -41,12 +41,12 @@ First, setup all your handlers by calling `bind()` or `bindAsync()` methods from
 
 ## Installation
 
-You can just install the package by the link on a [sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t5Y000001wN95QAE) or [dev org](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5Y000001wN95QAE).
+You can just install the package by the link on a [sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t5Y000001wNArQAM) or [dev org](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5Y000001wNArQAM).
 
 If you prefer using salesforce CLI you can run:
 
 ```
-sfdx force:package:install -p 04t5Y000001wN95QAE -w 10 -b 10 -u <username>
+sfdx force:package:install -p 04t5Y000001wNArQAM -w 10 -b 10 -u <username>
 ```
 
 ## Documentation

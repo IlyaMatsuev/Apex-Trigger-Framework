@@ -1,5 +1,6 @@
 global class Triggers {
     private static Boolean skipAllHandlers;
+    private static final Set<String> skippedHandlers = new Set<String>();
 
     @TestVisible
     global static Dispatcher dispatcher {
@@ -31,7 +32,7 @@ global class Triggers {
 
         global void run(IErrorHandler defaultErrorHandler) {
             if (!Trigger.isExecuting && !Test.isRunningTest()) {
-                throw new TriggerDispatcherException('TriggerDispatcher cannot be run from the non-trigger context');
+                throw new DispatcherException('TriggerDispatcher cannot be run from the non-trigger context');
             }
             List<Handler> handlers = this.handlers.clone();
             this.handlers.clear();
@@ -158,8 +159,6 @@ global class Triggers {
     }
 
     global class Skips {
-        private final Set<String> skippedHandlers = new Set<String>();
-
         global Boolean skipAll {
             get {
                 if (skipAllHandlers == null) {
@@ -202,7 +201,7 @@ global class Triggers {
         }
     }
 
-    global class TriggerDispatcherException extends Exception {
+    global class DispatcherException extends Exception {
     }
 
     global interface IHandler {
@@ -283,7 +282,7 @@ global class Triggers {
         }
 
         public void handle(Context context, Exception error) {
-            if (error instanceof TriggerDispatcherException || errorHandler == null) {
+            if (error instanceof DispatcherException || errorHandler == null) {
                 throw error;
             }
             errorHandler.handle(context, error);
