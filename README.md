@@ -1,6 +1,7 @@
 # Apex Trigger Framework
 
 [![Scratch org CI](https://github.com/IlyaMatsuev/Apex-Trigger-Framework/actions/workflows/scratch-org-ci.yml/badge.svg?branch=main)](https://github.com/IlyaMatsuev/Apex-Trigger-Framework/actions/workflows/scratch-org-ci.yml)
+[![codecov](https://codecov.io/gh/IlyaMatsuev/Apex-Trigger-Framework/branch/main/graph/badge.svg?token=TP4BO5MZUC)](https://codecov.io/gh/IlyaMatsuev/Apex-Trigger-Framework)
 
 Simple Apex Trigger Framework wrapped as an unlocked package. Contains the following features:
 
